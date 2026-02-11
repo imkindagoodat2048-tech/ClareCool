@@ -5,94 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClareCool V1.2</title>
     <style>
-        :root {
-            --bg-color: #0f0f13;
-            --chat-bg: #1a1a20;
-            --primary: #6c5ce7; 
-            --danger: #ff4757;
-            --text-white: #ffffff;
-            --msg-self: #6c5ce7;
-            --msg-other: #2d2d3a;
-        }
-
-        @keyframes rainbow {
-            0% { color: #ff4757; } 20% { color: #ffa502; } 40% { color: #eccc68; }
-            60% { color: #2ed573; } 80% { color: #1e90ff; } 100% { color: #ff4757; }
-        }
-
+        :root { --bg-color: #0f0f13; --chat-bg: #1a1a20; --primary: #6c5ce7; --danger: #ff4757; --text-white: #ffffff; --msg-self: #6c5ce7; --msg-other: #2d2d3a; }
+        @keyframes rainbow { 0% { color: #ff4757; } 20% { color: #ffa502; } 40% { color: #eccc68; } 60% { color: #2ed573; } 80% { color: #1e90ff; } 100% { color: #ff4757; } }
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
-
-        /* Classic Auth Screen */
-        #auth-container { align-self: center; background: var(--chat-bg); padding: 40px; border-radius: 20px; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #333; }
+        #auth-container { align-self: center; background: var(--chat-bg); padding: 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #333; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; background: #0f0f13; border: 1px solid #333; color: white; border-radius: 8px; outline: none; }
-        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: scale(0.98); }
-
-        /* Classic Chat Layout */
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; }
         #chat-wrapper { width: 100%; max-width: 900px; height: 100vh; display: flex; flex-direction: column; background: var(--chat-bg); border-left: 1px solid #333; border-right: 1px solid #333; }
         #top-bar { padding: 15px 20px; background: rgba(26, 26, 32, 0.95); border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-
-        /* Classic Messages */
-        .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 80%; position: relative; }
+        .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 80%; }
         .row-self { align-self: flex-end; flex-direction: row-reverse; }
-        .row-other { align-self: flex-start; }
-        .msg-bubble { padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; min-width: 60px; position: relative; }
+        .msg-bubble { padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; position: relative; }
         .row-self .msg-bubble { background: var(--msg-self); color: white; border-bottom-right-radius: 4px; }
         .row-other .msg-bubble { background: var(--msg-other); color: #ddd; border-bottom-left-radius: 4px; }
-        .pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #333; }
+        .pfp-small { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; cursor: pointer; object-fit: cover; }
         .username-label { font-size: 11px; color: #666; margin-bottom: 2px; }
-        .admin-tag { animation: rainbow 3s linear infinite; font-weight: bold; font-size: 10px; margin-left: 5px; }
-
-        /* Classic Actions */
-        .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 12px; }
-        .like-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 3px; padding: 0; }
-        .like-btn.liked { color: #ff4757; }
-        .action-icon-btn { background: none; border: none; cursor: pointer; color: #555; font-size: 12px; padding: 0; }
-
-        /* Modals */
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .status-label { font-size: 9px; color: #444; font-style: italic; }
+        .admin-tag { animation: rainbow 3s linear infinite; font-weight: bold; font-size: 10px; margin-left: 4px; }
+        .icon-btn { background: #333; color: white; border: none; border-radius: 5px; padding: 5px 8px; font-size: 10px; cursor: pointer; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; max-height: 80vh; overflow-y: auto; }
-        
-        #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; }
+        #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; align-items: center; }
         #warning-banner { background: var(--danger); color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 2000; }
     </style>
 </head>
 <body>
 
-    <div id="warning-banner" class="hidden">⚠️ WARNING FROM ADMIN. FOLLOW THE RULES. <button onclick="this.parentElement.remove()" style="width:auto; padding:2px 10px; background:white; color:black; border:none; border-radius:3px; cursor:pointer;">X</button></div>
+    <div id="warning-banner" class="hidden">⚠️ WARNING FROM ADMIN. FOLLOW THE RULES. <button onclick="this.parentElement.remove()">X</button></div>
 
     <div id="auth-container">
-        <h2 id="auth-header">ClareCool V1.2</h2>
+        <h2>ClareCool V1.2</h2>
         <div style="font-size: 10px; color: var(--primary); margin-bottom: 15px; font-weight: bold;">BACK TO BASICS</div>
         <input type="text" id="username-in" placeholder="Username">
         <input type="password" id="password-in" placeholder="Password">
-        <button onclick="handleLogin()">Login</button>
-        <p onclick="toggleMode()" style="cursor: pointer; color: #888; font-size: 12px; margin-top: 15px;" id="toggle-auth-text">New here? Sign Up</p>
+        <button onclick="handleLogin()">Login / Sign Up</button>
     </div>
 
     <div id="chat-wrapper" class="hidden">
         <div id="top-bar">
             <div style="display: flex; align-items: center; gap: 5px;">
-                <img id="my-mini-pfp" class="pfp-small" onclick="openSettings()">
-                <button onclick="openRules()" style="width: auto; padding: 5px 8px; background: #333; font-size: 10px;">📜</button>
-                <button id="inbox-btn" class="hidden" onclick="openInbox()" style="width:auto; padding:5px 8px; background: #e67e22; font-size: 10px;">📥</button>
-                <button id="gc-btn" class="hidden" onclick="openGCCreator()" style="width:auto; padding:5px 8px; background: #2ed573; font-size: 10px;">➕</button>
-                <button id="gc-sets-btn" class="hidden" onclick="openGCSettings()" style="width:auto; padding:5px 8px; background: #333; font-size: 10px;">⚙️</button>
-                <button id="nerd-btn" class="hidden" onclick="openNerd()" style="width:auto; padding:5px 8px; background: #3498db; font-size: 10px;">🤓</button>
-                <select id="room-select" onchange="switchRoom(this.value)" style="width: auto; padding: 4px; font-size: 10px; background:#000; color:#fff; margin:0;"></select>
+                <img id="my-mini-pfp" class="pfp-small" onclick="openProfile()">
+                <button class="icon-btn" onclick="openRules()">📜 Rules</button>
+                <button class="icon-btn" onclick="openMembers()">👥 Users</button>
+                <button id="inbox-btn" class="icon-btn hidden" style="background:#e67e22;" onclick="openInbox()">📥 Inbox</button>
+                <button id="gc-btn" class="icon-btn hidden" style="background:#2ed573;" onclick="openGCCreator()">➕ GC</button>
+                <button id="gc-sets-btn" class="icon-btn hidden" onclick="openGCSettings()">⚙️</button>
+                <button id="nerd-btn" class="icon-btn hidden" style="background:#3498db;" onclick="openNerd()">🤓 Admin</button>
+                <select id="room-select" onchange="switchRoom(this.value)" style="width: auto;"></select>
             </div>
-            <button onclick="location.reload()" style="width: auto; padding: 6px 12px; background: #444; font-size: 12px;">Exit</button>
+            <button onclick="location.reload()" style="width: auto; padding: 5px; background:#444; border:none; border-radius:5px; color:white;">Exit</button>
         </div>
         <div id="messages"></div>
         <div id="input-area">
-            <div id="admin-photo" class="hidden">
-                <label for="img-in" style="cursor:pointer; font-size:18px;">🖼️</label>
-                <input type="file" id="img-in" accept="image/*" style="display:none;" onchange="prepImg(this)">
-            </div>
-            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()" style="flex:1;">
-            <button onclick="sendMessage()" style="width: 70px;">Send</button>
+            <div id="admin-photo" class="hidden"><label for="img-in" style="cursor:pointer; font-size:18px;">🖼️</label><input type="file" id="img-in" accept="image/*" style="display:none;" onchange="prepImg(this)"></div>
+            <input type="text" id="msg-input" placeholder="Message..." onkeypress="if(event.key==='Enter') sendMessage()" style="flex:1;">
+            <button onclick="sendMessage()" style="width: 60px;">Send</button>
         </div>
     </div>
 
@@ -114,37 +83,31 @@
         firebase.initializeApp(config);
         const db = firebase.database();
 
-        let currentUser = null, isLoginMode = true, room = "messages", imgData = null, currentGCKey = null;
+        let currentUser = null, room = "messages", imgData = null, currentGCKey = null;
         const admins = ["44", "hunter", "bboy2014", "bartelsfamily5"];
 
-        function toggleMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.2" : "Sign Up";
-            document.getElementById('toggle-auth-text').innerText = isLoginMode ? "New here? Sign Up" : "Have an account? Login";
-        }
-
         async function handleLogin() {
-            const user = document.getElementById('username-in').value.trim().toLowerCase();
-            const pass = document.getElementById('password-in').value.trim();
-            if(!user || !pass) return;
-            const snap = await db.ref("users/" + user).once("value");
-            if (isLoginMode) {
-                if(snap.exists() && snap.val().password === pass) enterApp(user);
-                else alert("Failed login");
+            const u = document.getElementById('username-in').value.trim().toLowerCase();
+            const p = document.getElementById('password-in').value.trim();
+            if(!u || !p) return;
+            const snap = await db.ref("users/" + u).once("value");
+            if(snap.exists()){
+                if(snap.val().banned) return alert("ACCOUNT BANNED");
+                if(snap.val().password === p) launch(u);
+                else alert("Incorrect Password");
             } else {
-                if(snap.exists()) return alert("Taken");
-                await db.ref("users/" + user).set({ password: pass, pfp: "", status: "New Member", warned: false });
-                enterApp(user);
+                await db.ref("users/" + u).set({ password: p, pfp: "", status: "Active", warned: false, banned: false });
+                launch(u);
             }
         }
 
-        function enterApp(user) {
-            currentUser = user;
+        function launch(u) {
+            currentUser = u;
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
-            if(admins.includes(user)) ["inbox-btn", "gc-btn", "admin-photo"].forEach(id => document.getElementById(id).classList.remove('hidden'));
-            if(user === "bartelsfamily5") document.getElementById('nerd-btn').classList.remove('hidden');
-            db.ref("users/" + user + "/warned").on("value", s => { if(s.val()) document.getElementById('warning-banner').classList.remove('hidden'); });
+            if(admins.includes(u)) ["inbox-btn", "gc-btn", "admin-photo"].forEach(id => document.getElementById(id).classList.remove('hidden'));
+            if(u === "bartelsfamily5") document.getElementById('nerd-btn').classList.remove('hidden');
+            db.ref("users/" + u + "/warned").on("value", s => { if(s.val()) document.getElementById('warning-banner').classList.remove('hidden'); });
             loadMessages(); loadGCList();
         }
 
@@ -154,7 +117,7 @@
             const input = document.getElementById('msg-input');
             if(!input.value.trim() && !imgData) return;
             const uSnap = await db.ref("users/" + currentUser).once("value");
-            db.ref(room).push({ username: currentUser, text: input.value, img: imgData, pfp: uSnap.val().pfp || "", time: Date.now() });
+            db.ref(room).push({ username: currentUser, text: input.value, img: imgData, pfp: uSnap.val().pfp || "", status: uSnap.val().status || "", time: Date.now() });
             input.value = ""; imgData = null;
         }
 
@@ -167,55 +130,74 @@
                     const isAdmin = admins.includes(m.username);
                     const likeCount = m.likes ? Object.keys(m.likes).length : 0;
                     const liked = m.likes && m.likes[currentUser];
-                    const row = document.createElement('div');
-                    row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
-                    row.innerHTML = `
+                    const div = document.createElement('div');
+                    div.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
+                    div.innerHTML = `
                         <img src="${m.pfp || 'https://via.placeholder.com/40'}" class="pfp-small">
                         <div>
-                            ${!isMe ? `<div class="username-label">${m.username}${isAdmin?'<span class="admin-tag">[ADMIN]</span>':''}</div>` : ''}
-                            <div class="msg-bubble">
-                                ${m.text || ''}
-                                ${m.img ? `<img src="${m.img}" style="max-width:100%; display:block; margin-top:5px; border-radius:8px;">` : ''}
-                                <div class="msg-actions">
+                            ${!isMe ? `<div class="username-label">${m.username}${isAdmin?'<span class="admin-tag">[ADMIN]</span>':''}<br><span class="status-label">${m.status || ''}</span></div>` : ''}
+                            <div class="msg-bubble">${m.text || ''}
+                                ${m.img ? `<img src="${m.img}" style="max-width:100%; display:block; border-radius:8px; margin-top:5px;">` : ''}
+                                <div style="display:flex; gap:10px; margin-top:5px;">
                                     <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${child.key}')">${liked?'❤️':'🤍'} ${likeCount || ''}</button>
-                                    <button class="action-icon-btn" onclick="openReport('${child.key}', '${m.text}', '${m.username}')">🚩</button>
-                                    ${isMe || admins.includes(currentUser) ? `<button class="action-icon-btn" onclick="deleteMsg('${child.key}')">🗑️</button>` : ''}
+                                    <button class="icon-btn" style="background:none; font-size:10px;" onclick="openReport('${child.key}', '${m.text}', '${m.username}')">🚩</button>
+                                    ${isMe || admins.includes(currentUser) ? `<button onclick="del('${child.key}')" style="background:none; border:none; cursor:pointer; font-size:10px;">🗑️</button>` : ''}
                                 </div>
                             </div>
                         </div>`;
-                    box.appendChild(row);
+                    box.appendChild(div);
                 });
                 box.scrollTop = box.scrollHeight;
             });
         }
 
         function toggleLike(id) { const ref = db.ref(`${room}/${id}/likes/${currentUser}`); ref.once("value", s => s.exists() ? ref.remove() : ref.set(true)); }
-        function deleteMsg(id) { if(confirm("Delete?")) db.ref(`${room}/${id}`).remove(); }
+        function del(id) { if(confirm("Delete message?")) db.ref(`${room}/${id}`).remove(); }
         function switchRoom(r) { room = r; currentGCKey = r.startsWith("gcs/") ? r.split('/')[1] : null; document.getElementById('gc-sets-btn').className = currentGCKey ? "icon-btn" : "icon-btn hidden"; loadMessages(); }
 
-        // --- Modals Restored ---
         function showModal(html) { document.getElementById('modal-content').innerHTML = html + `<button onclick="closeModals()" style="background:#444; width:100%; margin-top:10px;">Close</button>`; document.getElementById('master-modal').classList.remove('hidden'); }
         function closeModals() { document.getElementById('master-modal').classList.add('hidden'); }
+
+        function openProfile() { showModal(`<h3>Profile</h3><input type="file" onchange="upPFP(this)"><input id="new-status" placeholder="Status..."><button onclick="upStatus()">Save</button>`); }
+        function upPFP(i) { const r = new FileReader(); r.onload = () => db.ref("users/" + currentUser).update({ pfp: r.result }); r.readAsDataURL(i.files[0]); }
+        function upStatus() { db.ref("users/" + currentUser).update({ status: document.getElementById('new-status').value }); closeModals(); }
+
+        function openRules() { showModal(`<h3>Rules</h3><ol style="text-align:left; font-size:12px;"><li>No swearing or hate speech of any kind</li><li>Nothing against school policy</li><li>No spamming</li><li>All animals are equal but some are more equal than others</li></ol>`); }
         
-        function openGCSettings() { showModal(`<h3>GC Settings</h3><input id="new-gn" placeholder="Rename"><button onclick="renameGC()">Go</button><hr><input id="add-m" placeholder="Add User"><button onclick="addGCUser()">Add</button>${admins.includes(currentUser) ? `<hr><button onclick="deleteGC()" style="background:red;">DELETE GC</button>` : ''}`); }
-        function renameGC() { db.ref("gc_meta/" + currentGCKey).update({ name: document.getElementById('new-gn').value }); closeModals(); }
-        function addGCUser() { db.ref("gc_meta/" + currentGCKey + "/members").once("value", s => { let m = s.val(); m.push(document.getElementById('add-m').value.toLowerCase()); db.ref("gc_meta/" + currentGCKey).update({ members: m }); closeModals(); }); }
-        function deleteGC() { if(confirm("Delete?")) { db.ref("gc_meta/" + currentGCKey).remove(); db.ref("gcs/" + currentGCKey).remove(); switchRoom("messages"); closeModals(); } }
+        function openMembers() {
+            db.ref("users").once("value", s => {
+                let l = "<h3>User List</h3>";
+                s.forEach(u => {
+                    l += `<div style="text-align:left; border-bottom:1px solid #333; padding:5px;">
+                        <b>${u.key}</b> <span style="font-size:10px;">(${u.val().status || ''})</span>
+                        ${admins.includes(currentUser) && u.key !== currentUser ? `
+                        <br><button onclick="warn('${u.key}')" style="font-size:9px; background:orange;">Warn</button>
+                        <button onclick="ban('${u.key}')" style="font-size:9px; background:red;">Ban</button>
+                        <button onclick="delAcc('${u.key}')" style="font-size:9px; background:black;">Delete</button>` : ''}
+                    </div>`;
+                });
+                showModal(l);
+            });
+        }
+
+        function warn(u) { db.ref("users/"+u).update({warned: true}); alert("Warned "+u); }
+        function ban(u) { if(confirm("Ban "+u+"?")) db.ref("users/"+u).update({banned: true}); }
+        function delAcc(u) { if(confirm("Delete account "+u+"?")) db.ref("users/"+u).remove(); }
 
         function openNerd() { showModal(`<h3>Nerd Stats</h3><button onclick="wipeMsgs()" style="background:red; width:100%;">Nuclear Wipe (Msgs)</button><button onclick="wipeGCs()" style="background:red; width:100%; margin-top:5px;">Wipe All GCs</button>`); }
         function wipeMsgs() { if(confirm("Wipe?")) db.ref("messages").remove(); }
         function wipeGCs() { if(confirm("Wipe GCs?")) { db.ref("gc_meta").remove(); db.ref("gcs").remove(); } }
 
-        function openGCCreator() { showModal(`<h3>Create GC</h3><input id="gn" placeholder="Name"><input id="gm" placeholder="Users (split by comma)"><button onclick="makeGC()">Create</button>`); }
+        function openGCCreator() { showModal(`<h3>Create GC</h3><input id="gn" placeholder="Name"><input id="gm" placeholder="Users (comma separated)"><button onclick="makeGC()">Create</button>`); }
         function makeGC() { const m = document.getElementById('gm').value.split(',').map(u => u.trim().toLowerCase()); m.push(currentUser); db.ref("gc_meta").push({ name: document.getElementById('gn').value, members: m }); closeModals(); }
-
-        function openRules() { showModal(`<h3>Rules</h3><p>1. No Swearing<br>2. Respect Admins</p>`); }
-        function openInbox() { db.ref("reports").on("value", snap => { let l = "<h3>Inbox</h3>"; snap.forEach(c => { l += `<div style="font-size:11px;">${c.val().reportedUser}: ${c.val().reason} <button onclick="warn('${c.val().reportedUser}')">Warn</button></div>`; }); showModal(l); }); }
-        function warn(u) { db.ref("users/"+u).update({warned: true}); alert("Warned"); }
-        function openSettings() { showModal(`<h3>Settings</h3><input type="file" onchange="upPFP(this)">`); }
-        function upPFP(e) { const r = new FileReader(); r.onload = () => db.ref("users/" + currentUser).update({ pfp: r.result }); r.readAsDataURL(e.target.files[0]); }
-        function loadGCList() { db.ref("gc_meta").on("value", s => { const sel = document.getElementById('room-select'); sel.innerHTML = `<option value="messages">Public</option>`; s.forEach(g => { if(g.val().members.includes(currentUser)) sel.innerHTML += `<option value="gcs/${g.key}">${g.val().name}</option>`; }); }); }
-        function openReport(id, text, user) { showModal(`<h3>Report</h3><select id="rep-r"><option>Spam</option><option>Hate</option></select><button onclick="subRep('${user}','${text}')">Submit</button>`); }
+        function openGCSettings() { showModal(`<h3>GC Settings</h3><input id="new-gn" placeholder="Rename"><button onclick="renameGC()">Go</button><hr><input id="add-m" placeholder="Add User"><button onclick="addGCUser()">Add</button>${admins.includes(currentUser) ? `<hr><button onclick="deleteGC()" style="background:red;">DELETE GC</button>` : ''}`); }
+        function renameGC() { db.ref("gc_meta/" + currentGCKey).update({ name: document.getElementById('new-gn').value }); closeModals(); }
+        function addGCUser() { db.ref("gc_meta/" + currentGCKey + "/members").once("value", s => { let m = s.val() || []; m.push(document.getElementById('add-m').value.toLowerCase()); db.ref("gc_meta/" + currentGCKey).update({ members: m }); closeModals(); }); }
+        function deleteGC() { if(confirm("Delete GC?")) { db.ref("gc_meta/" + currentGCKey).remove(); db.ref("gcs/" + currentGCKey).remove(); switchRoom("messages"); closeModals(); } }
+        
+        function loadGCList() { db.ref("gc_meta").on("value", s => { const sel = document.getElementById('room-select'); sel.innerHTML = `<option value="messages">Public</option>`; s.forEach(g => { if(g.val().members && g.val().members.includes(currentUser)) sel.innerHTML += `<option value="gcs/${g.key}">${g.val().name}</option>`; }); }); }
+        function openInbox() { db.ref("reports").on("value", snap => { let l = "<h3>Inbox</h3>"; snap.forEach(c => { l += `<div style="font-size:11px; text-align:left;">${c.val().reportedUser}: ${c.val().reason} <button onclick="warn('${c.val().reportedUser}')">Warn</button></div>`; }); showModal(l); }); }
+        function openReport(id, text, user) { showModal(`<h3>Report</h3><select id="rep-r"><option>Spamming</option><option>Hate/Swearing</option><option>School Policy</option></select><button onclick="subRep('${user}','${text}')">Submit</button>`); }
         function subRep(u, t) { db.ref("reports").push({ reportedUser: u, messageText: t, reason: document.getElementById('rep-r').value }); alert("Sent"); closeModals(); }
     </script>
 </body>
