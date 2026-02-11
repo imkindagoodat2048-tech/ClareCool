@@ -37,6 +37,7 @@
         .row-self .msg-bubble { background: var(--msg-self); color: white; border-bottom-right-radius: 4px; }
         .row-other .msg-bubble { background: var(--msg-other); color: #ddd; border-bottom-left-radius: 4px; }
         .pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #333; }
+        .username-label { font-size: 11px; color: #888; margin-bottom: 2px; margin-left: 5px; }
 
         /* Classic Actions */
         .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 12px; }
@@ -47,6 +48,7 @@
         /* Modals */
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; max-height: 80vh; overflow-y: auto; }
+        .report-item { background: #111; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--danger); text-align: left; font-size: 11px; }
 
         #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; }
         #warning-banner { background: var(--danger); color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 2000; }
@@ -95,6 +97,30 @@
         </div>
     </div>
 
+    <div id="report-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Report Message</h3>
+            <select id="report-reason">
+                <option value="Rule 1">Rule 1: Swearing/Hate Speech</option>
+                <option value="Rule 2">Rule 2: School Violation</option>
+                <option value="Rule 3">Rule 3: Spamming</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="report-other" placeholder="Additional details...">
+            <button onclick="submitReport()">Submit Report</button>
+            <button onclick="closeModals()" style="background:#444;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="inbox-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Admin Inbox</h3>
+            <div id="reports-list"></div>
+            <button onclick="clearReports()" style="background:var(--danger); font-size:10px;">Clear All</button>
+            <button onclick="closeModals()" style="background:#444;">Close</button>
+        </div>
+    </div>
+
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <h3>Account</h3>
@@ -128,21 +154,22 @@
 
     <script>
         const firebaseConfig = {
-        apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
-        authDomain: "mychat-28205.firebaseapp.com",
-        databaseURL: "https://mychat-28205-default-rtdb.firebaseio.com",
-        projectId: "mychat-28205",
-        storageBucket: "mychat-28205.firebasestorage.app",
-        messagingSenderId: "522121848657",
-        appId: "1:522121848657:web:7108993439310bf6da5570",
-        measurementId: "G-YFMS0DNREW"
- };
+            apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
+            authDomain: "mychat-28205.firebaseapp.com",
+            databaseURL: "https://mychat-28205-default-rtdb.firebaseio.com",
+            projectId: "mychat-28205",
+            storageBucket: "mychat-28205.firebasestorage.app",
+            messagingSenderId: "522121848657",
+            appId: "1:522121848657:web:7108993439310bf6da5570",
+            measurementId: "G-YFMS0DNREW"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
         let isLoginMode = true;
         let currentPath = "messages";
+        let reportTarget = null;
 
         function toggleMode() { isLoginMode = !isLoginMode; document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.1" : "Sign Up"; }
 
@@ -170,7 +197,7 @@
                 document.getElementById('gc-btn').classList.remove('hidden');
             }
             db.ref("users/"+user).on("value", s => {
-                if(s.val().warned) document.getElementById('warning-banner').classList.remove('hidden');
+                if(s.val() && s.val().warned) document.getElementById('warning-banner').classList.remove('hidden');
                 document.getElementById('my-mini-pfp').src = s.val().pfp || 'https://via.placeholder.com/40';
             });
             loadGCList();
@@ -186,11 +213,16 @@
                     const liked = m.likes && m.likes[currentUser];
                     const row = document.createElement('div');
                     row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
-                    row.innerHTML = `<img src="${m.pfp || 'https://via.placeholder.com/40'}" class="pfp-small" onclick="viewProfile('${m.username}')">
-                        <div><div class="msg-bubble">${m.text}<div class="msg-actions">
-                        <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${child.key}')">${liked?'❤️':'🤍'}</button>
-                        ${isMe || currentUser==='bartelsfamily5' ? `<button class="action-icon-btn" onclick="db.ref('${currentPath}/${child.key}').remove()">🗑️</button>` : ''}
-                        </div></div></div>`;
+                    row.innerHTML = `
+                        <img src="${m.pfp || 'https://via.placeholder.com/40'}" class="pfp-small" onclick="viewProfile('${m.username}')">
+                        <div>
+                            ${!isMe ? `<div class="username-label">${m.username}</div>` : ''}
+                            <div class="msg-bubble">${m.text}<div class="msg-actions">
+                                <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${child.key}')">${liked?'❤️':'🤍'}</button>
+                                <button class="action-icon-btn" onclick="openReport('${child.key}', '${m.text}', '${m.username}')">🚩</button>
+                                ${isMe || currentUser==='bartelsfamily5' ? `<button class="action-icon-btn" onclick="db.ref('${currentPath}/${child.key}').remove()">🗑️</button>` : ''}
+                            </div></div>
+                        </div>`;
                     box.appendChild(row);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -203,6 +235,54 @@
             const u = await db.ref("users/"+currentUser).once("value");
             db.ref(currentPath).push().set({ username: currentUser, text: input.value, pfp: u.val().pfp || "", time: Date.now() });
             input.value = "";
+        }
+
+        function openReport(id, text, user) {
+            reportTarget = { id, text, user }; 
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function submitReport() {
+            const reason = document.getElementById('report-reason').value;
+            const other = document.getElementById('report-other').value;
+            db.ref("reports").push().set({
+                reportedUser: reportTarget.user,
+                messageText: reportTarget.text,
+                reason: reason + (other ? ": " + other : ""),
+                reporter: currentUser,
+                time: Date.now()
+            });
+            alert("Report sent to Admin.");
+            closeModals();
+        }
+
+        function openInbox() {
+            const list = document.getElementById('reports-list');
+            document.getElementById('inbox-modal').classList.remove('hidden');
+            db.ref("reports").on("value", snap => {
+                list.innerHTML = ""; 
+                snap.forEach(child => {
+                    const r = child.val();
+                    const item = document.createElement('div');
+                    item.className = 'report-item'; 
+                    item.innerHTML = `
+                        <b>User:</b> ${r.reportedUser}<br>
+                        <b>Msg:</b> "${r.messageText}"<br>
+                        <b>Reason:</b> ${r.reason}<br>
+                        <button onclick="warnUser('${r.reportedUser}')" style="width:auto; padding:2px 8px; font-size:9px; background:orange; margin-top:5px; border:none; color:white; border-radius:4px; cursor:pointer;">Warn User</button>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        function warnUser(user) {
+            db.ref("users/" + user).update({ warned: true });
+            alert("Warning banner sent to " + user);
+        }
+
+        function clearReports() {
+            if(confirm("Clear all reports?")) db.ref("reports").remove();
         }
 
         async function viewProfile(user) {
