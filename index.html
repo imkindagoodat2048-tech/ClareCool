@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClareCool V1.3</title>
+    <title>ClareCool V1.2 - The Security Update</title>
     
     <script>
         (function() {
             const favicon = document.createElement('link');
-            favicon.rel = 'clarecool';
-            // It looks for "icon.png" in your main folder automatically
+            favicon.rel = 'icon';
+            favicon.type = 'image/png';
             favicon.href = 'clarecool.png'; 
             document.head.appendChild(favicon);
         })();
@@ -17,90 +17,115 @@
 
     <style>
         :root {
-            --bg-color: #0f0f13;
-            --chat-bg: #1a1a20;
+            --bg-color: #0c0c0e;
+            --chat-bg: #141418;
             --primary: #6c5ce7; 
             --danger: #ff4757;
+            --success: #2ed573;
+            --info: #3498db;
+            --warning: #f1c40f;
             --text-white: #ffffff;
-            --msg-self: #6c5ce7;
-            --msg-other: #2d2d3a;
+            --border: #2a2a32;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        @keyframes rainbow {
+            0% { color: #ff4757; } 20% { color: #ffa502; } 40% { color: #eccc68; }
+            60% { color: #2ed573; } 80% { color: #1e90ff; } 100% { color: #ff4757; }
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-color); color: var(--text-white); 
+            margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; 
+        }
+
         .hidden { display: none !important; }
 
-        #auth-container { align-self: center; background: var(--chat-bg); padding: 40px; border-radius: 20px; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #333; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; background: #0f0f13; border: 1px solid #333; color: white; border-radius: 8px; outline: none; }
-        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: scale(0.98); }
+        /* --- BIG BUTTON STYLING --- */
+        .btn-action {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 11px;
+            cursor: pointer; border: none; transition: 0.2s; color: white;
+            text-transform: uppercase; white-space: nowrap;
+        }
+        .btn-action:hover { transform: scale(1.05); filter: brightness(1.2); }
 
-        #chat-wrapper { width: 100%; max-width: 900px; height: 100vh; display: flex; flex-direction: column; background: var(--chat-bg); border-left: 1px solid #333; border-right: 1px solid #333; }
-        #top-bar { padding: 15px 20px; background: rgba(26, 26, 32, 0.95); border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .btn-members { background: #444; }
+        .btn-create { background: var(--success); }
+        .btn-meeting { background: var(--danger); }
+        .btn-inbox { background: #e67e22; }
+        .btn-rules { background: #7f8c8d; }
+        .btn-stats { background: var(--info); }
+        .btn-exit { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+
+        /* --- UI LAYOUT --- */
+        #chat-wrapper { width: 100%; max-width: 1200px; display: flex; flex-direction: column; background: var(--chat-bg); border: 1px solid var(--border); }
+        #top-bar { 
+            padding: 15px; background: #1a1a20; border-bottom: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; overflow-x: auto;
+        }
+        .bar-left { display: flex; align-items: center; gap: 8px; }
+
         #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-
-        .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 80%; position: relative; }
-        .row-self { align-self: flex-end; flex-direction: row-reverse; }
-        .row-other { align-self: flex-start; }
-        .msg-bubble { padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; min-width: 60px; position: relative; }
-        .row-self .msg-bubble { background: var(--msg-self); color: white; border-bottom-right-radius: 4px; }
-        .row-other .msg-bubble { background: var(--msg-other); color: #ddd; border-bottom-left-radius: 4px; }
-        .pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #333; }
-
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; }
-
-        #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; }
-        .stats-text { font-size: 14px; color: #aaa; margin: 10px 0; text-align: left; }
+        .admin-tag { animation: rainbow 3s linear infinite; font-weight: 900; margin-left: 5px; }
+        
+        #input-area { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1a1a20; padding: 30px; border-radius: 20px; width: 380px; text-align: center; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-    <div id="auth-container">
-        <h2>ClareCool V1.3</h2>
-        <input type="text" id="username-in" placeholder="Username">
-        <input type="password" id="password-in" placeholder="Password">
-        <button onclick="handleLogin()">Login</button>
-        <p onclick="toggleMode()" style="cursor: pointer; color: #888; font-size: 12px; margin-top: 15px;" id="toggle-auth-text">New here? Sign Up</p>
+    <div id="auth-container" style="align-self: center; text-align: center; background: #141418; padding: 50px; border-radius: 20px; border: 1px solid #2a2a32;">
+        <h1 style="margin:0;">ClareCool 1.2</h1>
+        <div style="color:var(--primary); font-size:12px; font-weight:bold; letter-spacing:2px; margin-bottom:20px;">THE SECURITY UPDATE</div>
+        <input type="text" id="username-in" placeholder="Username" style="width:100%; padding:12px; margin:10px 0; border-radius:8px; background:#000; color:#fff; border:1px solid #333;">
+        <input type="password" id="password-in" placeholder="Password" style="width:100%; padding:12px; margin:10px 0; border-radius:8px; background:#000; color:#fff; border:1px solid #333;">
+        <button onclick="login()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">ACCESS SYSTEM</button>
     </div>
 
     <div id="chat-wrapper" class="hidden">
         <div id="top-bar">
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <img id="my-mini-pfp" class="pfp-small" onclick="openSettings()">
-                <select id="chat-select" onchange="switchChat(this.value)" style="width: auto; padding: 5px; background: #333; font-size: 10px; margin:0;">
-                    <option value="messages">Global</option>
+            <div class="bar-left">
+                <img id="my-pfp" style="width:40px; height:40px; border-radius:8px; border:1px solid var(--border);">
+                <select id="room-select" onchange="switchRoom(this.value)" style="background:#000; color:#fff; border:1px solid #333; padding:8px; border-radius:8px;">
+                    <option value="messages">PUBLIC CHANNEL</option>
                 </select>
-                <button onclick="showMembers()" style="width:auto; padding:5px; background:#444; font-size:10px;">👥</button>
-                <button id="nerd-stats-btn" class="hidden" onclick="openNerdStats()" style="width:auto; padding:5px; background: #3498db; font-size: 10px;">🤓 Stats</button>
-                <button id="gc-btn" class="hidden" onclick="openGCCreator()" style="width:auto; padding:5px; background: #27ae60; font-size: 10px;">+</button>
+                
+                <button class="btn-action btn-members" onclick="openMembers()">👥 MEMBERS</button>
+                <button id="rule-btn" class="btn-action btn-rules" onclick="openRules()">📜 RULES</button>
+                
+                <button id="gc-btn" class="btn-action btn-create hidden" onclick="openGCCreator()">➕ NEW GROUP</button>
+                <button id="meet-btn" class="btn-action btn-meeting hidden" onclick="triggerMeeting()">🚨 MEETING</button>
+                <button id="inbox-btn" class="btn-action btn-inbox hidden" onclick="openInbox()">📥 INBOX</button>
+                
+                <button id="nerd-btn" class="btn-action btn-stats hidden" onclick="showNerdStats()">🤓 NERD STATS</button>
             </div>
-            <button onclick="location.reload()" style="width: auto; padding: 6px 12px; background: #444; font-size: 12px;">Exit</button>
+            <button class="btn-action btn-exit" onclick="location.reload()">LOGOUT</button>
         </div>
+
         <div id="messages"></div>
+
         <div id="input-area">
-            <input type="text" id="msg-input" placeholder="Type..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()" style="width: 70px;">Send</button>
+            <div id="admin-img-tool" class="hidden">
+                <label for="img-input" class="btn-action" style="background:#333; min-width:auto;">🖼️ PHOTO</label>
+                <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="handleImage(this)">
+            </div>
+            <input type="text" id="msg-input" style="flex:1; padding:12px; border-radius:8px; border:1px solid #333; background:#000; color:#fff;" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
+            <button onclick="send()" class="btn-action" style="background:var(--primary); min-width:100px;">SEND</button>
         </div>
     </div>
 
     <div id="nerd-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <h3>Nerd Stats</h3>
-            <div class="stats-text" id="stat-gc-count">Total GCs: Loading...</div>
-            <div class="stats-text" id="stat-msg-count">Total Messages: Loading...</div>
-            <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
-            <button onclick="nuclearWipe()" style="background: var(--danger);">WIPE</button>
-            <button onclick="closeModals()" style="background: #444;">Close</button>
-        </div>
-    </div>
-
-    <div id="gc-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3>Create GC</h3>
-            <input type="text" id="gc-name" placeholder="GC Name">
-            <input type="text" id="gc-users" placeholder="Usernames (comma separated)">
-            <button onclick="createGC()">Create</button>
-            <button onclick="closeModals()" style="background:#444;">Cancel</button>
+            <h2 style="color:var(--info);">SYSTEM DIAGNOSTIC</h2>
+            <div id="stat-log" style="text-align:left; background:#000; padding:15px; border-radius:10px; font-family:monospace;">
+                <p>TOTAL_GCS: <span id="s-gc" style="color:var(--success);">0</span></p>
+                <p>TOTAL_MSGS: <span id="s-msg" style="color:var(--success);">0</span></p>
+            </div>
+            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+            <button onclick="nuclearWipe()" style="width:100%; padding:15px; background:var(--danger); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">WIPE ALL DATA</button>
+            <button onclick="closeModals()" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">Close</button>
         </div>
     </div>
 
@@ -108,7 +133,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
             authDomain: "mychat-28205.firebaseapp.com",
             databaseURL: "https://mychat-28205-default-rtdb.firebaseio.com",
@@ -117,85 +142,91 @@
             messagingSenderId: "522121848657",
             appId: "1:522121848657:web:7108993439310bf6da5570"
         };
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(config);
         const db = firebase.database();
 
-        let currentUser = null;
+        let user = null;
+        let room = "messages";
+        let imgData = null;
         const admins = ["44", "hunter", "bboy2014", "bartelsfamily5"];
 
-        async function handleLogin() {
-            const user = document.getElementById('username-in').value.trim().toLowerCase();
-            const pass = document.getElementById('password-in').value.trim();
-            const snap = await db.ref("users/" + user).once("value");
-            
-            if(snap.val() && snap.val().password === pass) {
-                currentUser = user;
+        async function login() {
+            const u = document.getElementById('username-in').value.trim().toLowerCase();
+            const p = document.getElementById('password-in').value.trim();
+            const snap = await db.ref("users/" + u).once("value");
+            if(snap.exists() && snap.val().password === p) {
+                user = u;
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('chat-wrapper').classList.remove('hidden');
-                
-                // Show GC creator for all admins
-                if(admins.includes(user)) document.getElementById('gc-btn').classList.remove('hidden');
-                
-                // ONLY show Nerd Stats for bartelsfamily5
-                if(user === "bartelsfamily5") document.getElementById('nerd-stats-btn').classList.remove('hidden');
-                
-                loadMessages();
-            } else {
-                alert("Invalid Login");
-            }
+                if(admins.includes(u)) {
+                    document.getElementById('gc-btn').classList.remove('hidden');
+                    document.getElementById('meet-btn').classList.remove('hidden');
+                    document.getElementById('inbox-btn').classList.remove('hidden');
+                    document.getElementById('admin-img-tool').classList.remove('hidden');
+                }
+                if(u === "bartelsfamily5") document.getElementById('nerd-btn').classList.remove('hidden');
+                load();
+            } else { alert("Access Denied"); }
         }
 
-        async function openNerdStats() {
-            document.getElementById('nerd-modal').classList.remove('hidden');
-            
-            // Calculate Stats
-            const gcSnap = await db.ref("gc_meta").once("value");
-            const globalSnap = await db.ref("messages").once("value");
-            const gcsSnap = await db.ref("gcs").once("value");
+        function handleImage(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { imgData = e.target.result; alert("Image Prepared."); };
+            reader.readAsDataURL(input.files[0]);
+        }
 
-            let gcCount = gcSnap.numChildren();
-            let msgCount = globalSnap.numChildren();
+        function send() {
+            const txt = document.getElementById('msg-input').value;
+            if(!txt && !imgData) return;
+            db.ref(room).push({ sender: user, text: txt, img: imgData, time: Date.now() });
+            document.getElementById('msg-input').value = "";
+            imgData = null;
+        }
 
-            // Loop through all GCs to count those messages too
-            gcsSnap.forEach(child => {
-                msgCount += child.numChildren();
+        function load() {
+            db.ref(room).on("value", snap => {
+                const box = document.getElementById('messages');
+                box.innerHTML = "";
+                snap.forEach(c => {
+                    const m = c.val();
+                    const isAdmin = admins.includes(m.sender);
+                    const msgDiv = document.createElement('div');
+                    msgDiv.style.alignSelf = m.sender === user ? 'flex-end' : 'flex-start';
+                    msgDiv.innerHTML = `
+                        <div style="font-size:10px; color:#888; margin-bottom:2px;">${m.sender}${isAdmin ? '<span class="admin-tag">[ADMIN]</span>':''}</div>
+                        <div style="padding:10px; background:${m.sender === user ? '#6c5ce7':'#23232b'}; border-radius:10px; max-width:300px;">
+                            ${m.text ? `<div>${m.text}</div>` : ''}
+                            ${m.img ? `<img src="${m.img}" style="width:100%; border-radius:8px; margin-top:5px;">` : ''}
+                        </div>
+                    `;
+                    box.appendChild(msgDiv);
+                });
+                box.scrollTop = box.scrollHeight;
             });
+        }
 
-            document.getElementById('stat-gc-count').innerText = `Total GCs: ${gcCount}`;
-            document.getElementById('stat-msg-count').innerText = `Total Messages: ${msgCount}`;
+        async function showNerdStats() {
+            document.getElementById('nerd-modal').classList.remove('hidden');
+            const gcs = await db.ref("gc_meta").once("value");
+            const msgs = await db.ref("messages").once("value");
+            document.getElementById('s-gc').innerText = gcs.numChildren();
+            document.getElementById('s-msg').innerText = msgs.numChildren();
         }
 
         function nuclearWipe() {
-            const w1 = confirm("Are you sure? This will delete EVERY message.");
-            if(w1) {
-                const w2 = confirm("Are you 100%? Like seriously, it doesnt even spare group chats.");
-                if(w2) {
-                    const w3 = confirm("Remember, your only using this if you have to. Right?");
-                    if(w3) {
+            if(confirm("Are you sure? This will delete EVERY message.")) {
+                if(confirm("Are you 100%? Like seriously, it doesnt even spare group chats.")) {
+                    if(confirm("Remember, your only using this if you have to. Right?")) {
                         db.ref("messages").remove();
                         db.ref("gcs").remove();
-                        alert("The database has been wiped.");
+                        alert("Wipe Complete.");
                         closeModals();
                     }
                 }
             }
         }
 
-        function createGC() {
-            if(!admins.includes(currentUser)) return;
-            const name = document.getElementById('gc-name').value;
-            const users = document.getElementById('gc-users').value.split(',').map(u => u.trim().toLowerCase());
-            users.push(currentUser);
-            db.ref("gc_meta").push().set({ name, members: users });
-            closeModals();
-        }
-
-        function closeModals() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
-        }
-
-        // Standard logic for switching chats and loading messages goes here...
-        // (Keeping it concise as per your request not to change existing working parts)
+        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden')); }
     </script>
 </body>
 </html>
