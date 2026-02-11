@@ -3,55 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Real-Time Chat</title>
+    <title>ClareCool Chat</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
-        #auth-container { background: #1e1e1e; padding: 2rem; border-radius: 8px; width: 300px; text-align: center; border: 1px solid #333; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; }
-        button { width: 95%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #chat-container { width: 100%; height: 100vh; display: flex; flex-direction: column; }
-        #settings-btn { position: absolute; top: 10px; left: 10px; background: #333; padding: 8px 15px; border-radius: 5px; cursor: pointer; z-index: 10; font-size: 14px;}
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .message { display: flex; align-items: flex-start; gap: 10px; background: #2a2a2a; padding: 12px; border-radius: 8px; max-width: 80%; }
-        .pfp { width: 40px; height: 40px; background: black; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
-        #input-area { padding: 20px; background: #1e1e1e; display: flex; gap: 10px; border-top: 1px solid #333; }
-        #settings-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 25px; border-radius: 12px; border: 2px solid #007bff; z-index: 100; text-align: center; }
+        
+        /* Auth Screen */
+        #auth-container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #333; align-self: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; }
+        button { width: 95%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+
+        /* Chat Layout */
+        #chat-container { width: 100%; max-width: 800px; height: 100vh; display: flex; flex-direction: column; background: #181818; position: relative; }
+        #top-bar { padding: 15px; background: #222; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message { display: flex; align-items: flex-start; gap: 12px; background: #2a2a2a; padding: 12px; border-radius: 12px; max-width: 85%; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .pfp { width: 45px; height: 45px; background: #000; border-radius: 10px; object-fit: cover; cursor: pointer; border: 2px solid #444; }
+        .username { color: #007bff; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .username:hover { text-decoration: underline; }
+
+        #input-area { padding: 20px; background: #222; display: flex; gap: 10px; border-top: 1px solid #333; }
+
+        /* Modals */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 30px; border-radius: 20px; border: 2px solid #007bff; z-index: 100; text-align: center; min-width: 250px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 90; }
+        .profile-img-large { width: 100px; height: 100px; border-radius: 20px; margin-bottom: 15px; object-fit: cover; border: 3px solid #007bff; }
     </style>
 </head>
 <body>
 
+    <div id="overlay" class="overlay hidden" onclick="closeModals()"></div>
+
     <div id="auth-container">
-        <h2 id="auth-title">Login</h2>
+        <h2 id="auth-title">Welcome!</h2>
         <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password (Simple)">
+        <input type="password" id="password" placeholder="Password">
         <button id="auth-btn" onclick="handleAuth()">Login</button>
-        <p onclick="toggleAuth()" style="font-size: 12px; cursor: pointer; color: #aaa; margin-top: 15px;" id="toggle-text">Need an account? Sign Up</p>
+        <p onclick="toggleAuth()" style="font-size: 12px; cursor: pointer; color: #aaa; margin-top: 15px;" id="toggle-text">New here? Sign Up</p>
     </div>
 
     <div id="chat-container" class="hidden">
-        <div id="settings-btn" onclick="toggleSettings()">⚙️ Settings</div>
+        <div id="top-bar">
+            <button onclick="toggleSettings()" style="width: auto; padding: 8px 15px; background: #333;">⚙️ Settings</button>
+            <span style="font-weight: bold; color: #007bff;">ClareCool Chat</span>
+            <button onclick="logout()" style="width: auto; padding: 8px 15px; background: #dc3545;">Log Out</button>
+        </div>
         <div id="messages"></div>
         <div id="input-area">
-            <input type="text" id="msg-input" placeholder="Say something to the world...">
-            <button onclick="sendMessage()" style="width: 100px;">Send</button>
+            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" style="width: 80px;">Send</button>
         </div>
     </div>
 
-    <div id="settings-modal" class="hidden">
-        <h3>User Settings</h3>
-        <p>Current User: <span id="display-name" style="color:#007bff"></span></p>
-        <p style="font-size: 12px; color: #888;">Upload PFP (Base64):</p>
+    <div id="settings-modal" class="modal hidden">
+        <h3>Your Settings</h3>
+        <p>User: <span id="my-name" style="color:#007bff"></span></p>
+        <input type="text" id="status-input" placeholder="Set your status (e.g. Happy!)">
+        <p style="font-size: 12px; color: #888;">Change Profile Picture:</p>
         <input type="file" id="pfp-upload" accept="image/*" onchange="updatePFP(event)">
         <br><br>
-        <button onclick="toggleSettings()" style="background: #444;">Close</button>
+        <button onclick="saveSettings()">Save & Close</button>
+    </div>
+
+    <div id="profile-modal" class="modal hidden">
+        <img id="view-pfp" class="profile-img-large" src="">
+        <h2 id="view-name" style="margin: 5px 0;"></h2>
+        <p id="view-status" style="color: #00ff88; font-style: italic;"></p>
+        <div style="background: #333; padding: 5px 10px; border-radius: 5px; display: inline-block; font-size: 12px;">Community Member</div>
+        <br><br>
+        <button onclick="closeModals()" style="background: #444;">Close</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // --- 1. PASTE YOUR CONFIG HERE ---
+        // --- YOUR CONFIG HERE (MUST BE THE REAL ONE) ---
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
         authDomain: "mychat-28205.firebaseapp.com",
@@ -61,57 +92,110 @@
         messagingSenderId: "522121848657",
         appId: "1:522121848657:web:7108993439310bf6da5570",
         measurementId: "G-YFMS0DNREW"
+
         };
-        // ---------------------------------
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
-        let currentPFP = null; 
+        let currentPFP = ""; 
+        let currentStatus = "Hey there!";
         let isLogin = true;
 
         function toggleAuth() {
             isLogin = !isLogin;
-            document.getElementById('auth-title').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('auth-title').innerText = isLogin ? "Welcome Back" : "Create Account";
             document.getElementById('auth-btn').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('toggle-text').innerText = isLogin ? "New here? Sign Up" : "Have an account? Login";
         }
 
-        function handleAuth() {
-            const user = document.getElementById('username').value.trim();
-            if (user) {
-                currentUser = user;
-                document.getElementById('display-name').innerText = user;
-                document.getElementById('auth-container').classList.add('hidden');
-                document.getElementById('chat-container').classList.remove('hidden');
-                loadMessages();
+        async function handleAuth() {
+            const user = document.getElementById('username').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value.trim();
+            if (!user || !pass) return alert("Please enter a username and password");
+
+            const userRef = db.ref("users/" + user);
+            const snapshot = await userRef.once("value");
+            const userData = snapshot.val();
+
+            if (isLogin) {
+                if (userData && userData.password === pass) {
+                    enterChat(user, userData.pfp, userData.status);
+                } else { alert("Wrong username or password!"); }
+            } else {
+                if (userData) { alert("Username taken!"); }
+                else {
+                    await userRef.set({ password: pass, pfp: "", status: "New Member!" });
+                    enterChat(user, "", "New Member!");
+                }
             }
         }
 
+        function enterChat(username, pfp, status) {
+            currentUser = username;
+            currentPFP = pfp || "";
+            currentStatus = status || "Online";
+            document.getElementById('my-name').innerText = username;
+            document.getElementById('status-input').value = currentStatus;
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('chat-container').classList.remove('hidden');
+            loadMessages();
+        }
+
+        function logout() {
+            location.reload(); 
+        }
+
         function toggleSettings() {
+            document.getElementById('overlay').classList.toggle('hidden');
             document.getElementById('settings-modal').classList.toggle('hidden');
+        }
+
+        function saveSettings() {
+            const newStatus = document.getElementById('status-input').value;
+            currentStatus = newStatus;
+            db.ref("users/" + currentUser).update({ status: newStatus });
+            closeModals();
         }
 
         function updatePFP(event) {
             const reader = new FileReader();
             reader.onload = function() {
                 currentPFP = reader.result;
-                alert("PFP Updated locally! It will show on your next message.");
+                db.ref("users/" + currentUser).update({ pfp: currentPFP });
+                alert("Profile Picture Updated!");
             };
             reader.readAsDataURL(event.target.files[0]);
+        }
+
+        async function showProfile(name) {
+            const snapshot = await db.ref("users/" + name.toLowerCase()).once("value");
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('view-name').innerText = name;
+                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
+                document.getElementById('view-status').innerText = data.status || "No status set";
+                document.getElementById('overlay').classList.remove('hidden');
+                document.getElementById('profile-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('overlay').classList.add('hidden');
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('profile-modal').classList.add('hidden');
         }
 
         function sendMessage() {
             const text = document.getElementById('msg-input').value;
             if (!text) return;
-
             db.ref("messages").push().set({
                 username: currentUser,
                 text: text,
-                pfp: currentPFP || null, // Will be null if no PFP
+                pfp: currentPFP,
                 timestamp: Date.now()
             });
-
             document.getElementById('msg-input').value = "";
         }
 
@@ -124,15 +208,12 @@
                     const msgDiv = document.createElement('div');
                     msgDiv.className = 'message';
                     
-                    const img = document.createElement(data.pfp ? 'img' : 'div');
-                    img.className = 'pfp';
-                    if (data.pfp) img.src = data.pfp;
-
+                    const pfpSrc = data.pfp || "https://via.placeholder.com/45";
                     msgDiv.innerHTML = `
-                        ${img.outerHTML}
+                        <img src="${pfpSrc}" class="pfp" onclick="showProfile('${data.username}')">
                         <div>
-                            <strong style="color: #007bff;">${data.username}</strong>
-                            <div style="margin-top: 5px;">${data.text}</div>
+                            <span class="username" onclick="showProfile('${data.username}')">${data.username}</span>
+                            <div style="margin-top: 5px; line-height: 1.4;">${data.text}</div>
                         </div>
                     `;
                     msgArea.appendChild(msgDiv);
