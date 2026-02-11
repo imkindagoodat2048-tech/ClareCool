@@ -19,19 +19,20 @@
         #top-bar { padding: 15px; background: #222; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
         
         #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .message { display: flex; align-items: flex-start; gap: 12px; background: #2a2a2a; padding: 12px; border-radius: 12px; max-width: 85%; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message { display: flex; align-items: flex-start; gap: 12px; background: #2a2a2a; padding: 12px; border-radius: 12px; max-width: 85%; }
         
-        .pfp { width: 45px; height: 45px; background: #000; border-radius: 10px; object-fit: cover; cursor: pointer; border: 2px solid #444; }
+        .pfp { width: 45px; height: 45px; background: #444; border-radius: 10px; object-fit: cover; cursor: pointer; border: 2px solid #555; }
         .username { color: #007bff; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .username:hover { text-decoration: underline; }
 
         #input-area { padding: 20px; background: #222; display: flex; gap: 10px; border-top: 1px solid #333; }
 
         /* Modals */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 30px; border-radius: 20px; border: 2px solid #007bff; z-index: 100; text-align: center; min-width: 250px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 90; }
-        .profile-img-large { width: 100px; height: 100px; border-radius: 20px; margin-bottom: 15px; object-fit: cover; border: 3px solid #007bff; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 30px; border-radius: 20px; border: 2px solid #007bff; z-index: 100; text-align: center; min-width: 260px; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 90; }
+        .profile-img-large { width: 120px; height: 120px; border-radius: 20px; margin-bottom: 15px; object-fit: cover; border: 3px solid #007bff; background: #444; }
+        
+        /* Status Badge */
+        .status-text { color: #00ff88; font-style: italic; margin-bottom: 15px; display: block; }
     </style>
 </head>
 <body>
@@ -39,7 +40,7 @@
     <div id="overlay" class="overlay hidden" onclick="closeModals()"></div>
 
     <div id="auth-container">
-        <h2 id="auth-title">Welcome!</h2>
+        <h2 id="auth-title">Welcome Back</h2>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <button id="auth-btn" onclick="handleAuth()">Login</button>
@@ -49,8 +50,8 @@
     <div id="chat-container" class="hidden">
         <div id="top-bar">
             <button onclick="toggleSettings()" style="width: auto; padding: 8px 15px; background: #333;">⚙️ Settings</button>
-            <span style="font-weight: bold; color: #007bff;">ClareCool Chat</span>
-            <button onclick="logout()" style="width: auto; padding: 8px 15px; background: #dc3545;">Log Out</button>
+            <span style="font-weight: bold; color: #007bff;">ClareCool</span>
+            <button onclick="location.reload()" style="width: auto; padding: 8px 15px; background: #dc3545;">Log Out</button>
         </div>
         <div id="messages"></div>
         <div id="input-area">
@@ -60,10 +61,9 @@
     </div>
 
     <div id="settings-modal" class="modal hidden">
-        <h3>Your Settings</h3>
-        <p>User: <span id="my-name" style="color:#007bff"></span></p>
-        <input type="text" id="status-input" placeholder="Set your status (e.g. Happy!)">
-        <p style="font-size: 12px; color: #888;">Change Profile Picture:</p>
+        <h3>Edit Profile</h3>
+        <input type="text" id="status-input" placeholder="Your status...">
+        <p style="font-size: 12px; color: #888;">Update PFP:</p>
         <input type="file" id="pfp-upload" accept="image/*" onchange="updatePFP(event)">
         <br><br>
         <button onclick="saveSettings()">Save & Close</button>
@@ -71,10 +71,8 @@
 
     <div id="profile-modal" class="modal hidden">
         <img id="view-pfp" class="profile-img-large" src="">
-        <h2 id="view-name" style="margin: 5px 0;"></h2>
-        <p id="view-status" style="color: #00ff88; font-style: italic;"></p>
-        <div style="background: #333; padding: 5px 10px; border-radius: 5px; display: inline-block; font-size: 12px;">Community Member</div>
-        <br><br>
+        <h2 id="view-name"></h2>
+        <span id="view-status" class="status-text"></span>
         <button onclick="closeModals()" style="background: #444;">Close</button>
     </div>
 
@@ -82,7 +80,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // --- YOUR CONFIG HERE (MUST BE THE REAL ONE) ---
+        // --- 1. CONFIG (PASTE YOURS HERE) ---
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
         authDomain: "mychat-28205.firebaseapp.com",
@@ -92,15 +90,12 @@
         messagingSenderId: "522121848657",
         appId: "1:522121848657:web:7108993439310bf6da5570",
         measurementId: "G-YFMS0DNREW"
-
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
-        let currentPFP = ""; 
-        let currentStatus = "Hey there!";
         let isLogin = true;
 
         function toggleAuth() {
@@ -113,7 +108,7 @@
         async function handleAuth() {
             const user = document.getElementById('username').value.trim().toLowerCase();
             const pass = document.getElementById('password').value.trim();
-            if (!user || !pass) return alert("Please enter a username and password");
+            if (!user || !pass) return alert("Missing info!");
 
             const userRef = db.ref("users/" + user);
             const snapshot = await userRef.once("value");
@@ -121,30 +116,29 @@
 
             if (isLogin) {
                 if (userData && userData.password === pass) {
-                    enterChat(user, userData.pfp, userData.status);
-                } else { alert("Wrong username or password!"); }
+                    enterChat(user);
+                } else { alert("Wrong password or user!"); }
             } else {
-                if (userData) { alert("Username taken!"); }
+                if (userData) { alert("Taken!"); }
                 else {
-                    await userRef.set({ password: pass, pfp: "", status: "New Member!" });
-                    enterChat(user, "", "New Member!");
+                    // Initial Save: Sets up the profile for the first time
+                    await userRef.set({ password: pass, pfp: "", status: "Just joined!" });
+                    enterChat(user);
                 }
             }
         }
 
-        function enterChat(username, pfp, status) {
+        function enterChat(username) {
             currentUser = username;
-            currentPFP = pfp || "";
-            currentStatus = status || "Online";
-            document.getElementById('my-name').innerText = username;
-            document.getElementById('status-input').value = currentStatus;
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-container').classList.remove('hidden');
+            
+            // Sync current user's status to settings input
+            db.ref("users/" + currentUser).once("value", snap => {
+                if(snap.val()) document.getElementById('status-input').value = snap.val().status || "";
+            });
+            
             loadMessages();
-        }
-
-        function logout() {
-            location.reload(); 
         }
 
         function toggleSettings() {
@@ -154,7 +148,6 @@
 
         function saveSettings() {
             const newStatus = document.getElementById('status-input').value;
-            currentStatus = newStatus;
             db.ref("users/" + currentUser).update({ status: newStatus });
             closeModals();
         }
@@ -162,9 +155,10 @@
         function updatePFP(event) {
             const reader = new FileReader();
             reader.onload = function() {
-                currentPFP = reader.result;
-                db.ref("users/" + currentUser).update({ pfp: currentPFP });
-                alert("Profile Picture Updated!");
+                const base64 = reader.result;
+                db.ref("users/" + currentUser).update({ pfp: base64 }).then(() => {
+                    alert("Profile Picture Saved!");
+                });
             };
             reader.readAsDataURL(event.target.files[0]);
         }
@@ -174,8 +168,8 @@
             const data = snapshot.val();
             if (data) {
                 document.getElementById('view-name').innerText = name;
-                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
-                document.getElementById('view-status').innerText = data.status || "No status set";
+                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/120";
+                document.getElementById('view-status').innerText = data.status || "No status";
                 document.getElementById('overlay').classList.remove('hidden');
                 document.getElementById('profile-modal').classList.remove('hidden');
             }
@@ -183,17 +177,21 @@
 
         function closeModals() {
             document.getElementById('overlay').classList.add('hidden');
-            document.getElementById('settings-modal').classList.add('hidden');
-            document.getElementById('profile-modal').classList.add('hidden');
+            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const text = document.getElementById('msg-input').value;
             if (!text) return;
+
+            // Fetch latest PFP right when sending to ensure it's up to date
+            const userSnap = await db.ref("users/" + currentUser).once("value");
+            const pfp = userSnap.val().pfp || "";
+
             db.ref("messages").push().set({
                 username: currentUser,
                 text: text,
-                pfp: currentPFP,
+                pfp: pfp,
                 timestamp: Date.now()
             });
             document.getElementById('msg-input').value = "";
@@ -207,13 +205,13 @@
                     const data = child.val();
                     const msgDiv = document.createElement('div');
                     msgDiv.className = 'message';
-                    
                     const pfpSrc = data.pfp || "https://via.placeholder.com/45";
+                    
                     msgDiv.innerHTML = `
                         <img src="${pfpSrc}" class="pfp" onclick="showProfile('${data.username}')">
                         <div>
                             <span class="username" onclick="showProfile('${data.username}')">${data.username}</span>
-                            <div style="margin-top: 5px; line-height: 1.4;">${data.text}</div>
+                            <div style="margin-top: 5px;">${data.text}</div>
                         </div>
                     `;
                     msgArea.appendChild(msgDiv);
