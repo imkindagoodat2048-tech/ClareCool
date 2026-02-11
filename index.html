@@ -37,15 +37,16 @@
         .pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #333; }
         .username-label { font-size: 11px; color: #888; margin-bottom: 2px; }
 
-        /* Hearts & Actions */
+        /* LIKES & BUTTONS */
         .msg-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .like-btn { background: none; border: none; cursor: pointer; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 4px; padding: 0; }
-        .like-btn.liked { color: #ff4757; }
-        .action-icon { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; opacity: 0.5; color: white; }
+        .like-btn { background: none; border: none; cursor: pointer; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 4px; padding: 0; opacity: 0.8; }
+        .like-btn.liked { color: #ff4757; opacity: 1; }
+        .action-icon { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; opacity: 0.5; transition: 0.2s; color: white; }
+        .action-icon:hover { opacity: 1; }
 
         /* Modals */
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; }
-        .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; }
+        .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; max-height: 70vh; overflow-y: auto; }
 
         #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; }
         button { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px; cursor: pointer; font-weight: bold; }
@@ -54,10 +55,10 @@
 </head>
 <body>
 
-    <div id="warning-banner" class="hidden">⚠️ ADMIN WARNING. FOLLOW RULES. <button onclick="this.parentElement.remove()">X</button></div>
+    <div id="warning-banner" class="hidden">⚠️ ADMIN WARNING: PLEASE FOLLOW RULES. <button onclick="this.parentElement.remove()">X</button></div>
 
     <div id="auth-container">
-        <h2>ClareCool V1.1</h2>
+        <h2 id="auth-header">ClareCool V1.1</h2>
         <input type="text" id="username-in" placeholder="Username">
         <input type="password" id="password-in" placeholder="Password">
         <button onclick="handleLogin()" style="width:100%">Login</button>
@@ -68,13 +69,13 @@
         <div id="top-bar">
             <div style="display: flex; gap: 8px; align-items: center;">
                 <img id="my-mini-pfp" class="pfp-small" onclick="openSettings()">
-                <select id="chat-select" onchange="switchChat(this.value)" style="width: auto; background:#333; font-size:10px; padding:5px;">
-                    <option value="global">Global Chat</option>
+                <select id="chat-select" onchange="switchChat(this.value)" style="width: auto; background:#333; font-size:10px; padding:5px; margin:0;">
+                    <option value="messages">Global Chat</option>
                 </select>
                 <button id="gc-btn" class="hidden" onclick="openGCCreator()" style="background:#27ae60; font-size:10px;">+ GC</button>
-                <button id="inbox-btn" class="hidden" onclick="openInbox()" style="background:#e67e22; font-size:10px;">📥</button>
+                <button id="inbox-btn" class="hidden" onclick="openInbox()" style="background:#e67e22; font-size:10px;">📥 Inbox</button>
             </div>
-            <button onclick="location.reload()" style="background:#444; font-size:10px;">Logout</button>
+            <button onclick="location.reload()" style="background:#444; font-size:11px;">Logout</button>
         </div>
         <div id="messages"></div>
         <div id="input-area">
@@ -87,18 +88,42 @@
         <div class="modal-box">
             <h3>Create Secret GC</h3>
             <input type="text" id="gc-name" placeholder="GC Name">
-            <input type="text" id="gc-users" placeholder="Usernames (e.g. clare, bob)">
+            <input type="text" id="gc-users" placeholder="Usernames (comma separated)">
             <button onclick="createGC()" style="width:100%">Create</button>
+            <button onclick="closeModals()" style="background:#444; width:100%; margin-top:5px;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Profile Settings</h3>
+            <p style="font-size:11px; color:#888;">Change Profile Picture</p>
+            <input type="file" id="file-upload" accept="image/*" onchange="uploadPFP(event)">
+            <input type="text" id="status-input" placeholder="Update Status...">
+            <button onclick="saveSettings()" style="width:100%">Save Changes</button>
             <button onclick="closeModals()" style="background:#444; width:100%; margin-top:5px;">Cancel</button>
         </div>
     </div>
 
     <div id="inbox-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <h3>Admin Inbox</h3>
-            <div id="reports-list" style="max-height: 200px; overflow-y: auto; text-align: left; font-size: 11px;"></div>
+            <h3>Admin Reports</h3>
+            <div id="reports-list" style="text-align: left; font-size: 12px;"></div>
             <button onclick="db.ref('reports').remove()" style="background:var(--danger); width:100%; margin-top:10px;">Clear All</button>
             <button onclick="closeModals()" style="background:#444; width:100%; margin-top:5px;">Close</button>
+        </div>
+    </div>
+
+    <div id="report-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Report Message</h3>
+            <select id="report-reason">
+                <option value="Rule 1">Rule 1: Swearing/Hate Speech</option>
+                <option value="Rule 2">Rule 2: School Violation</option>
+                <option value="Rule 3">Rule 3: Spamming</option>
+            </select>
+            <button onclick="submitReport()" style="width:100%">Send Report</button>
+            <button onclick="closeModals()" style="background:#444; width:100%; margin-top:5px;">Cancel</button>
         </div>
     </div>
 
@@ -106,7 +131,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // --- PASTE FIREBASE CONFIG ---
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
         authDomain: "mychat-28205.firebaseapp.com",
@@ -122,10 +147,12 @@
 
         let currentUser = null;
         let isLoginMode = true;
-        let currentChatID = "global";
+        let currentPath = "messages";
+        let reportTarget = null;
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
+            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.1" : "Sign Up";
             document.getElementById('toggle-auth-text').innerText = isLoginMode ? "New here? Sign Up" : "Have an account? Login";
         }
 
@@ -136,10 +163,10 @@
             const snap = await db.ref("users/" + user).once("value");
             if (isLoginMode) {
                 if(snap.val() && snap.val().password === pass) enterApp(user);
-                else alert("Error");
+                else alert("Login Failed");
             } else {
                 if(snap.exists()) return alert("Taken");
-                await db.ref("users/" + user).set({ password: pass, pfp: "", warned: false });
+                await db.ref("users/" + user).set({ password: pass, pfp: "", status: "Member", warned: false });
                 enterApp(user);
             }
         }
@@ -149,24 +176,27 @@
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
             if(user === "bartelsfamily5") {
-                document.getElementById('gc-btn').classList.remove('hidden');
                 document.getElementById('inbox-btn').classList.remove('hidden');
+                document.getElementById('gc-btn').classList.remove('hidden');
             }
-            db.ref("users/"+user+"/warned").on("value", s => { if(s.val()) document.getElementById('warning-banner').classList.remove('hidden'); });
+            db.ref("users/"+user).on("value", s => {
+                if(s.val().warned) document.getElementById('warning-banner').classList.remove('hidden');
+                document.getElementById('my-mini-pfp').src = s.val().pfp || 'https://via.placeholder.com/40';
+            });
             loadGCList();
             loadMessages();
         }
 
-        function switchChat(id) { currentChatID = id; loadMessages(); }
+        function switchChat(path) { currentPath = path; loadMessages(); }
 
         function loadMessages() {
-            db.ref("chats/" + currentChatID).limitToLast(50).on("value", snap => {
+            db.ref(currentPath).limitToLast(50).on("value", snap => {
                 const box = document.getElementById('messages');
                 box.innerHTML = "";
                 snap.forEach(child => {
                     const m = child.val();
                     const isMe = m.username === currentUser;
-                    const likeCount = m.likes ? Object.keys(m.likes).length : 0;
+                    const likes = m.likes ? Object.keys(m.likes).length : 0;
                     const liked = m.likes && m.likes[currentUser];
                     const row = document.createElement('div');
                     row.className = `message-row ${isMe ? 'row-self' : ''}`;
@@ -177,13 +207,12 @@
                             <div class="msg-bubble">
                                 ${m.text}
                                 <div class="msg-actions">
-                                    <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${child.key}')">${liked?'❤️':'🤍'} ${likeCount || ''}</button>
-                                    <button class="action-icon" onclick="reportMsg('${child.key}','${m.text}','${m.username}')">🚩</button>
-                                    ${isMe || currentUser === 'bartelsfamily5' ? `<button class="action-icon" onclick="db.ref('chats/${currentChatID}/${child.key}').remove()">🗑️</button>` : ''}
+                                    <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${child.key}')">${liked?'❤️':'🤍'} ${likes || ''}</button>
+                                    <button class="action-icon" onclick="openReport('${child.key}','${m.text}','${m.username}')">🚩</button>
+                                    ${isMe || currentUser === 'bartelsfamily5' ? `<button class="action-icon" onclick="db.ref('${currentPath}/${child.key}').remove()">🗑️</button>` : ''}
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     box.appendChild(row);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -194,22 +223,29 @@
             const input = document.getElementById('msg-input');
             if(!input.value.trim()) return;
             const userSnap = await db.ref("users/" + currentUser).once("value");
-            db.ref("chats/" + currentChatID).push().set({
+            db.ref(currentPath).push().set({
                 username: currentUser, text: input.value, pfp: userSnap.val().pfp || "", time: Date.now()
             });
             input.value = "";
         }
 
         function toggleLike(id) {
-            const ref = db.ref(`chats/${currentChatID}/${id}/likes/${currentUser}`);
+            const ref = db.ref(`${currentPath}/${id}/likes/${currentUser}`);
             ref.once("value", s => s.exists() ? ref.remove() : ref.set(true));
         }
 
-        function reportMsg(id, text, user) {
-            db.ref("reports").push().set({ reported: user, msg: text, reporter: currentUser });
-            alert("Reported.");
+        // PROFILE FUNCTIONS
+        function uploadPFP(e) {
+            const reader = new FileReader();
+            reader.onload = () => { db.ref("users/" + currentUser).update({ pfp: reader.result }); };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+        function saveSettings() {
+            db.ref("users/" + currentUser).update({ status: document.getElementById('status-input').value });
+            closeModals();
         }
 
+        // GC FUNCTIONS
         function createGC() {
             const name = document.getElementById('gc-name').value;
             const users = document.getElementById('gc-users').value.split(',').map(u => u.trim().toLowerCase());
@@ -217,21 +253,25 @@
             db.ref("gc_meta").push().set({ name: name, members: users });
             closeModals();
         }
-
         function loadGCList() {
             db.ref("gc_meta").on("value", snap => {
                 const sel = document.getElementById('chat-select');
-                sel.innerHTML = '<option value="global">Global Chat</option>';
+                sel.innerHTML = '<option value="messages">Global Chat</option>';
                 snap.forEach(child => {
-                    const data = child.val();
-                    if(data.members.includes(currentUser)) {
+                    if(child.val().members.includes(currentUser)) {
                         const opt = document.createElement('option');
-                        opt.value = child.key; opt.innerText = data.name; sel.appendChild(opt);
+                        opt.value = "gcs/" + child.key; opt.innerText = child.val().name; sel.appendChild(opt);
                     }
                 });
             });
         }
 
+        // ADMIN & MODAL HELPERS
+        function openReport(id, text, user) { reportTarget={id, text, user}; document.getElementById('report-modal').classList.remove('hidden'); }
+        function submitReport() {
+            db.ref("reports").push().set({ user: reportTarget.user, msg: reportTarget.text, reason: document.getElementById('report-reason').value });
+            alert("Reported to Admin."); closeModals();
+        }
         function openInbox() {
             const list = document.getElementById('reports-list');
             document.getElementById('inbox-modal').classList.remove('hidden');
@@ -239,16 +279,14 @@
                 list.innerHTML = "";
                 snap.forEach(c => {
                     const r = c.val();
-                    list.innerHTML += `<div style="border-bottom:1px solid #333; padding:5px;"><b>${r.reported}</b>: ${r.msg}<br>
-                    <button onclick="db.ref('users/${r.reported}').update({warned:true})" style="font-size:9px; background:orange;">Warn</button></div>`;
+                    list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #333;"><b>${r.user}</b>: ${r.msg}<br>
+                    <button onclick="db.ref('users/${r.user}').update({warned:true})" style="background:orange; font-size:9px;">Warn</button></div>`;
                 });
             });
         }
-
-        function openGCCreator() { document.getElementById('gc-modal').classList.remove('hidden'); }
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function openRules() { alert("1. No Swearing\n2. No School Bans\n3. No Spam"); }
         function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden')); }
-        function openSettings() { alert("Update PFP by uploading in settings in future updates!"); }
-        function openRules() { alert("1. No swearing/hate speech\n2. No school bans\n3. No spam"); }
     </script>
 </body>
 </html>
