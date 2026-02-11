@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClareCool Chat V2</title>
+    <title>ClareCool V3</title>
     <style>
         /* --- MODERN DARK THEME --- */
         :root {
             --bg-color: #0f0f13;
             --chat-bg: #1a1a20;
-            --primary: #6c5ce7; /* Cool Purple */
+            --primary: #6c5ce7; 
             --primary-hover: #5649c0;
             --text-white: #ffffff;
-            --text-grey: #a0a0a0;
             --msg-self: #6c5ce7;
             --msg-other: #2d2d3a;
             --danger: #ff4757;
         }
 
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background: var(--bg-color); 
             color: var(--text-white); 
             margin: 0; 
@@ -43,8 +42,6 @@
             border: 1px solid #333;
         }
         
-        h2 { margin-top: 0; color: var(--primary); }
-        
         input {
             width: 100%;
             padding: 12px;
@@ -57,8 +54,6 @@
             outline: none;
         }
         
-        input:focus { border-color: var(--primary); }
-
         button {
             width: 100%;
             padding: 12px;
@@ -71,8 +66,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-
-        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        button:hover { opacity: 0.9; transform: scale(0.98); }
 
         /* --- CHAT INTERFACE --- */
         #chat-wrapper {
@@ -94,34 +88,33 @@
             justify-content: space-between;
             align-items: center;
             backdrop-filter: blur(5px);
-            z-index: 10;
         }
 
-        /* --- MESSAGES AREA --- */
         #messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 15px;
         }
 
-        /* Scrollbar styling */
-        #messages::-webkit-scrollbar { width: 8px; }
-        #messages::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-
+        /* --- MESSAGES & ACTIONS --- */
         .message-row {
             display: flex;
             align-items: flex-end;
             gap: 10px;
-            max-width: 75%;
+            max-width: 80%;
+            position: relative;
             animation: popIn 0.2s ease-out;
         }
         
+        .message-row:hover .delete-msg-btn {
+            opacity: 1; /* Show trash can on hover */
+        }
+
         @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-        /* Logic for Self vs Other */
         .row-self { align-self: flex-end; flex-direction: row-reverse; }
         .row-other { align-self: flex-start; }
 
@@ -132,19 +125,11 @@
             line-height: 1.4;
             word-wrap: break-word;
             position: relative;
+            min-width: 60px;
         }
 
-        .row-self .msg-bubble {
-            background: var(--msg-self);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .row-other .msg-bubble {
-            background: var(--msg-other);
-            color: #ddd;
-            border-bottom-left-radius: 4px;
-        }
+        .row-self .msg-bubble { background: var(--msg-self); color: white; border-bottom-right-radius: 4px; }
+        .row-other .msg-bubble { background: var(--msg-other); color: #ddd; border-bottom-left-radius: 4px; }
 
         .pfp-small {
             width: 35px;
@@ -152,19 +137,40 @@
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
-            border: 2px solid var(--chat-bg);
+            border: 2px solid #333;
         }
 
-        .username-label {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 2px;
-            margin-left: 5px;
+        .username-label { font-size: 11px; color: #666; margin-bottom: 2px; margin-left: 5px; }
+        .row-self .username-label { display: none; }
+
+        /* --- ACTIONS (LIKES & DELETE) --- */
+        .msg-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 12px;
         }
         
-        .row-self .username-label { display: none; } /* Hide name for self */
+        .like-btn {
+            background: none; border: none; padding: 0;
+            cursor: pointer; color: rgba(255,255,255,0.5);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .like-btn.liked { color: #ff4757; }
+        .like-count { font-size: 10px; opacity: 0.8; }
 
-        /* --- INPUT AREA --- */
+        .delete-msg-btn {
+            background: #ff4757; color: white;
+            border: none; border-radius: 5px;
+            font-size: 10px; padding: 2px 6px;
+            cursor: pointer;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.2s;
+            margin-bottom: 5px;
+        }
+
+        /* --- INPUT --- */
         #input-area {
             padding: 20px;
             background: var(--chat-bg);
@@ -178,50 +184,18 @@
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.8);
             z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             backdrop-filter: blur(3px);
         }
-
         .modal-box {
-            background: #222;
-            padding: 30px;
-            border-radius: 20px;
-            width: 300px;
-            text-align: center;
-            border: 1px solid #444;
-            position: relative;
+            background: #222; padding: 30px; border-radius: 20px;
+            width: 300px; text-align: center; border: 1px solid #444;
         }
-
-        .profile-pic-large {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
-
-        .status-display {
-            color: var(--primary);
-            font-style: italic;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+        .profile-pic-large { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 15px; }
         
-        .close-btn { background: #444; margin-top: 10px; }
-
-        /* ADMIN BUTTON */
-        #admin-reset-btn {
-            background: var(--danger);
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+        .admin-nuke-btn {
+            background: #ff4757; color: white; margin-top: 15px;
+            font-size: 10px; padding: 5px; width: auto;
         }
 
     </style>
@@ -229,19 +203,19 @@
 <body>
 
     <div id="auth-container">
-        <h2 id="auth-header">ClareCool V2</h2>
+        <h2 id="auth-header">ClareCool V3</h2>
         <input type="text" id="username-in" placeholder="Username">
         <input type="password" id="password-in" placeholder="Password">
         <button id="main-auth-btn" onclick="handleLogin()">Login</button>
-        <button onclick="toggleMode()" style="background: transparent; color: #888; margin-top: 5px; font-size: 12px;" id="toggle-auth-text">No account? Create one</button>
+        <p onclick="toggleMode()" style="cursor: pointer; color: #888; font-size: 12px; margin-top: 15px;" id="toggle-auth-text">No account? Create one</p>
     </div>
 
     <div id="chat-wrapper" class="hidden">
         <div id="top-bar">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <img id="my-mini-pfp" class="pfp-small" src="https://via.placeholder.com/40" onclick="openSettings()">
+                <img id="my-mini-pfp" class="pfp-small" src="" onclick="openSettings()">
                 <span style="font-weight: bold;">ClareCool Chat</span>
-                <button id="admin-reset-btn" class="hidden" onclick="adminNuke()">RESET CHAT</button>
+                <button id="admin-reset-btn" class="hidden" onclick="adminResetAll()" style="background: #ff4757; font-size: 10px; width: auto; padding: 5px 10px;">RESET ALL</button>
             </div>
             <button onclick="location.reload()" style="width: auto; padding: 8px 15px; background: #333; font-size: 12px;">Log Out</button>
         </div>
@@ -258,8 +232,11 @@
         <div class="modal-box">
             <img id="view-pfp" class="profile-pic-large" src="">
             <h2 id="view-name">User</h2>
-            <div id="view-status" class="status-display">No status</div>
-            <button class="close-btn" onclick="closeModals()">Close</button>
+            <div id="view-status" style="color: var(--primary); font-style: italic; margin-bottom: 15px;">No status</div>
+            
+            <button onclick="closeModals()" style="background: #444;">Close</button>
+            
+            <button id="ban-user-btn" class="hidden admin-nuke-btn" onclick="banUser()">⚠️ DELETE ACCOUNT ⚠️</button>
         </div>
     </div>
 
@@ -268,12 +245,10 @@
             <h3>My Settings</h3>
             <p style="font-size: 12px; color: #888;">Profile Picture</p>
             <input type="file" id="file-upload" accept="image/*" onchange="uploadPFP(event)">
-            
             <p style="font-size: 12px; color: #888; margin-top: 15px;">My Status</p>
             <input type="text" id="status-input" placeholder="e.g. Gaming...">
-            
             <button onclick="saveSettings()">Save Changes</button>
-            <button class="close-btn" onclick="closeModals()">Cancel</button>
+            <button onclick="closeModals()" style="background: #444; margin-top: 5px;">Cancel</button>
         </div>
     </div>
 
@@ -282,7 +257,7 @@
 
     <script>
         // --------------------------------------------------------------
-        // 1. PASTE YOUR FIREBASE KEYS HERE
+        // 1. YOUR CONFIG HERE (Keep your real keys!)
         // --------------------------------------------------------------
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
@@ -301,11 +276,12 @@
 
         let currentUser = null;
         let isLoginMode = true;
+        let viewedUser = null; // Who are we looking at in the modal?
 
-        // --- AUTH LOGIC ---
+        // --- AUTH ---
         function toggleMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V2" : "Sign Up";
+            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V3" : "Sign Up";
             document.getElementById('main-auth-btn').innerText = isLoginMode ? "Login" : "Create Account";
             document.getElementById('toggle-auth-text').innerText = isLoginMode ? "No account? Create one" : "Have an account? Login";
         }
@@ -313,25 +289,19 @@
         async function handleLogin() {
             const user = document.getElementById('username-in').value.trim().toLowerCase();
             const pass = document.getElementById('password-in').value.trim();
-
-            if (!user || !pass) return alert("Please fill in everything!");
+            if (!user || !pass) return alert("Fill in everything!");
 
             const snap = await db.ref("users/" + user).once("value");
             const data = snap.val();
 
             if (isLoginMode) {
-                // Strict Login
-                if (!data) return alert("User doesn't exist!");
+                if (!data) return alert("User not found!");
                 if (data.password !== pass) return alert("Wrong password!");
                 enterApp(user);
             } else {
-                // Strict Sign Up
                 if (data) return alert("Username taken!");
                 await db.ref("users/" + user).set({
-                    password: pass,
-                    pfp: "",
-                    status: "New member",
-                    joined: Date.now()
+                    password: pass, pfp: "", status: "New member", joined: Date.now()
                 });
                 enterApp(user);
             }
@@ -342,7 +312,7 @@
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
 
-            // Setup Admin Button
+            // Admin Check
             if (currentUser === "bartelsfamily5") {
                 document.getElementById('admin-reset-btn').classList.remove('hidden');
             }
@@ -356,56 +326,87 @@
                 }
             });
 
-            startChatListener();
+            loadMessages();
         }
 
         // --- CHAT LOGIC ---
-        function startChatListener() {
+        function loadMessages() {
             const msgBox = document.getElementById('messages');
             
-            db.ref("messages").limitToLast(50).on("child_added", (snapshot) => {
-                const data = snapshot.val();
-                const isMe = data.username === currentUser;
+            // Listen for any changes (add, remove, like updates)
+            db.ref("messages").limitToLast(50).on("value", (snapshot) => {
+                msgBox.innerHTML = "";
+                const allMsgs = snapshot.val() || {};
                 
-                const row = document.createElement('div');
-                row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
-
-                // PFP Logic
-                const pfpImg = document.createElement('img');
-                pfpImg.className = 'pfp-small';
-                pfpImg.src = data.pfp || "https://via.placeholder.com/40";
-                pfpImg.onclick = () => showProfile(data.username);
-
-                // Bubble Logic
-                const bubble = document.createElement('div');
-                bubble.className = 'msg-bubble';
-                bubble.innerText = data.text;
-
-                // Name Tag (only for others)
-                if (!isMe) {
-                    const nameTag = document.createElement('div');
-                    nameTag.className = 'username-label';
-                    nameTag.innerText = data.username;
-                    // Assemble: Name -> Bubble
-                    const wrapper = document.createElement('div');
-                    wrapper.appendChild(nameTag);
-                    wrapper.appendChild(bubble);
-                    row.appendChild(pfpImg);
-                    row.appendChild(wrapper);
-                } else {
-                    // Assemble Me: Bubble -> PFP
-                    row.appendChild(bubble);
-                    row.appendChild(pfpImg);
-                }
-
-                msgBox.appendChild(row);
+                Object.keys(allMsgs).forEach(key => {
+                    const data = allMsgs[key];
+                    renderMessage(key, data, msgBox);
+                });
                 msgBox.scrollTop = msgBox.scrollHeight;
             });
+        }
 
-            // Handle Reset
-            db.ref("messages").on("child_removed", () => {
-                msgBox.innerHTML = ""; // Clear screen if admin nukes
-            });
+        function renderMessage(key, data, container) {
+            const isMe = data.username === currentUser;
+            const isAdmin = currentUser === "bartelsfamily5";
+            
+            const row = document.createElement('div');
+            row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
+
+            // PFP
+            const pfpImg = document.createElement('img');
+            pfpImg.className = 'pfp-small';
+            pfpImg.src = data.pfp || "https://via.placeholder.com/40";
+            pfpImg.onclick = () => showProfile(data.username);
+
+            // Bubble Content
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+            bubble.innerHTML = `<div>${data.text}</div>`;
+
+            // Likes & Delete Section
+            const actionDiv = document.createElement('div');
+            actionDiv.className = 'msg-actions';
+            
+            // Like Button
+            const likeCount = data.likes ? Object.keys(data.likes).length : 0;
+            const isLiked = data.likes && data.likes[currentUser];
+            const heartIcon = isLiked ? "❤️" : "🤍";
+            
+            const likeBtn = document.createElement('button');
+            likeBtn.className = `like-btn ${isLiked ? 'liked' : ''}`;
+            likeBtn.innerHTML = `${heartIcon} <span class="like-count">${likeCount || ''}</span>`;
+            likeBtn.onclick = () => toggleLike(key);
+            
+            actionDiv.appendChild(likeBtn);
+
+            // Admin Delete Button (Only if Admin!)
+            if (isAdmin) {
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-msg-btn';
+                delBtn.innerText = '🗑️';
+                delBtn.onclick = () => deleteMessage(key);
+                actionDiv.appendChild(delBtn);
+            }
+
+            bubble.appendChild(actionDiv);
+
+            // Assemble
+            if (!isMe) {
+                const nameTag = document.createElement('div');
+                nameTag.className = 'username-label';
+                nameTag.innerText = data.username;
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(nameTag);
+                wrapper.appendChild(bubble);
+                row.appendChild(pfpImg);
+                row.appendChild(wrapper);
+            } else {
+                row.appendChild(bubble);
+                row.appendChild(pfpImg);
+            }
+
+            container.appendChild(row);
         }
 
         async function sendMessage() {
@@ -413,7 +414,6 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // Get latest PFP before sending
             const userSnap = await db.ref("users/" + currentUser).once("value");
             const currentPFP = userSnap.val().pfp || "";
 
@@ -426,22 +426,64 @@
             input.value = "";
         }
 
-        // --- ADMIN LOGIC ---
-        function adminNuke() {
-            if (confirm("WARNING: This will delete ALL messages for everyone. Do it?")) {
+        // --- NEW FEATURES ---
+
+        function toggleLike(msgId) {
+            const likeRef = db.ref(`messages/${msgId}/likes/${currentUser}`);
+            likeRef.once("value", snap => {
+                if (snap.exists()) {
+                    likeRef.remove(); // Unlike
+                } else {
+                    likeRef.set(true); // Like
+                }
+            });
+        }
+
+        function deleteMessage(msgId) {
+            if(confirm("Admin: Delete this message?")) {
+                db.ref(`messages/${msgId}`).remove();
+            }
+        }
+
+        function adminResetAll() {
+            if(confirm("⚠️ NUKE WARNING: This deletes ALL messages. Sure?")) {
                 db.ref("messages").remove();
             }
         }
 
+        function banUser() {
+            if (!viewedUser) return;
+            const verify = prompt(`Type "DELETE" to ban ${viewedUser} forever.`);
+            if (verify === "DELETE") {
+                db.ref("users/" + viewedUser).remove();
+                alert(`User ${viewedUser} has been deleted.`);
+                closeModals();
+            }
+        }
+
         // --- PROFILE & SETTINGS ---
+
         async function showProfile(name) {
+            viewedUser = name;
             const snap = await db.ref("users/" + name).once("value");
             const data = snap.val();
+            
             if (data) {
                 document.getElementById('view-name').innerText = name;
                 document.getElementById('view-status').innerText = "\"" + (data.status || "No status") + "\"";
                 document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
+                
+                // Show Ban Hammer if Admin
+                const banBtn = document.getElementById('ban-user-btn');
+                if (currentUser === "bartelsfamily5" && name !== "bartelsfamily5") {
+                    banBtn.classList.remove('hidden');
+                } else {
+                    banBtn.classList.add('hidden');
+                }
+
                 document.getElementById('profile-modal').classList.remove('hidden');
+            } else {
+                alert("User not found (maybe they were deleted?)");
             }
         }
 
@@ -450,14 +492,12 @@
         }
 
         function closeModals() {
-            document.getElementById('profile-modal').classList.add('hidden');
-            document.getElementById('settings-modal').classList.add('hidden');
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.add('hidden'));
         }
 
         function uploadPFP(event) {
             const file = event.target.files[0];
-            if (file.size > 500000) return alert("Image too large! Use a smaller one.");
-            
+            if (file.size > 500000) return alert("Too big!");
             const reader = new FileReader();
             reader.onload = function() {
                 db.ref("users/" + currentUser).update({ pfp: reader.result });
