@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClareCool V3</title>
+    <title>ClareCool V1</title>
     <style>
-        /* --- MODERN DARK THEME --- */
         :root {
             --bg-color: #0f0f13;
             --chat-bg: #1a1a20;
@@ -17,238 +16,113 @@
             --danger: #ff4757;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-white); 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            height: 100vh; 
-            overflow: hidden; 
-        }
-
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-white); margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* --- AUTH SCREEN --- */
-        #auth-container {
-            align-self: center;
-            background: var(--chat-bg);
-            padding: 40px;
-            border-radius: 20px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            border: 1px solid #333;
-        }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            box-sizing: border-box;
-            background: #0f0f13;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
-            outline: none;
-        }
-        
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        /* Auth Screen */
+        #auth-container { align-self: center; background: var(--chat-bg); padding: 40px; border-radius: 20px; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; background: #0f0f13; border: 1px solid #333; color: white; border-radius: 8px; outline: none; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { opacity: 0.9; transform: scale(0.98); }
 
-        /* --- CHAT INTERFACE --- */
-        #chat-wrapper {
-            width: 100%;
-            max-width: 900px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--chat-bg);
-            border-left: 1px solid #333;
-            border-right: 1px solid #333;
-        }
+        /* Chat Layout */
+        #chat-wrapper { width: 100%; max-width: 900px; height: 100vh; display: flex; flex-direction: column; background: var(--chat-bg); border-left: 1px solid #333; border-right: 1px solid #333; }
+        #top-bar { padding: 15px 20px; background: rgba(26, 26, 32, 0.95); border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(5px); }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
 
-        #top-bar {
-            padding: 15px 20px;
-            background: rgba(26, 26, 32, 0.95);
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        /* --- MESSAGES & ACTIONS --- */
-        .message-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 10px;
-            max-width: 80%;
-            position: relative;
-            animation: popIn 0.2s ease-out;
-        }
-        
-        .message-row:hover .delete-msg-btn {
-            opacity: 1; /* Show trash can on hover */
-        }
-
-        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
+        /* Messages */
+        .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 80%; position: relative; animation: popIn 0.2s ease-out; }
         .row-self { align-self: flex-end; flex-direction: row-reverse; }
         .row-other { align-self: flex-start; }
-
-        .msg-bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            position: relative;
-            min-width: 60px;
-        }
-
+        .msg-bubble { padding: 10px 15px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; min-width: 60px; position: relative; }
         .row-self .msg-bubble { background: var(--msg-self); color: white; border-bottom-right-radius: 4px; }
         .row-other .msg-bubble { background: var(--msg-other); color: #ddd; border-bottom-left-radius: 4px; }
+        .pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid #333; }
+        .username-label { font-size: 11px; color: #666; margin-bottom: 2px; }
 
-        .pfp-small {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-            border: 2px solid #333;
-        }
-
-        .username-label { font-size: 11px; color: #666; margin-bottom: 2px; margin-left: 5px; }
-        .row-self .username-label { display: none; }
-
-        /* --- ACTIONS (LIKES & DELETE) --- */
-        .msg-actions {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 5px;
-            font-size: 12px;
-        }
-        
-        .like-btn {
-            background: none; border: none; padding: 0;
-            cursor: pointer; color: rgba(255,255,255,0.5);
-            display: flex; align-items: center; gap: 4px;
-        }
+        /* Actions */
+        .msg-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 12px; }
+        .like-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 3px; }
         .like-btn.liked { color: #ff4757; }
-        .like-count { font-size: 10px; opacity: 0.8; }
+        .delete-msg-btn { background: #ff4757; color: white; border: none; border-radius: 4px; font-size: 10px; padding: 2px 5px; cursor: pointer; opacity: 0; transition: 0.2s; }
+        .message-row:hover .delete-msg-btn { opacity: 1; }
 
-        .delete-msg-btn {
-            background: #ff4757; color: white;
-            border: none; border-radius: 5px;
-            font-size: 10px; padding: 2px 6px;
-            cursor: pointer;
-            opacity: 0; /* Hidden by default */
-            transition: opacity 0.2s;
-            margin-bottom: 5px;
-        }
+        /* Modals */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-box { background: #1e1e24; padding: 30px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #444; }
+        .member-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
 
-        /* --- INPUT --- */
-        #input-area {
-            padding: 20px;
-            background: var(--chat-bg);
-            border-top: 1px solid #333;
-            display: flex;
-            gap: 10px;
-        }
-
-        /* --- MODALS --- */
-        .modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(3px);
-        }
-        .modal-box {
-            background: #222; padding: 30px; border-radius: 20px;
-            width: 300px; text-align: center; border: 1px solid #444;
-        }
-        .profile-pic-large { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 15px; }
-        
-        .admin-nuke-btn {
-            background: #ff4757; color: white; margin-top: 15px;
-            font-size: 10px; padding: 5px; width: auto;
-        }
-
+        #input-area { padding: 20px; background: var(--chat-bg); border-top: 1px solid #333; display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
     <div id="auth-container">
-        <h2 id="auth-header">ClareCool V3</h2>
+        <h2 id="auth-header" style="margin-bottom: 5px;">ClareCool V1</h2>
+        <div style="font-size: 10px; color: var(--primary); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px;">OFFICIAL RELEASE</div>
         <input type="text" id="username-in" placeholder="Username">
         <input type="password" id="password-in" placeholder="Password">
         <button id="main-auth-btn" onclick="handleLogin()">Login</button>
-        <p onclick="toggleMode()" style="cursor: pointer; color: #888; font-size: 12px; margin-top: 15px;" id="toggle-auth-text">No account? Create one</p>
+        <p onclick="toggleMode()" style="cursor: pointer; color: #888; font-size: 12px; margin-top: 15px;" id="toggle-auth-text">New here? Sign Up</p>
     </div>
 
     <div id="chat-wrapper" class="hidden">
         <div id="top-bar">
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <img id="my-mini-pfp" class="pfp-small" src="" onclick="openSettings()">
-                <span style="font-weight: bold;">ClareCool Chat</span>
-                <button id="admin-reset-btn" class="hidden" onclick="adminResetAll()" style="background: #ff4757; font-size: 10px; width: auto; padding: 5px 10px;">RESET ALL</button>
+                <button onclick="openRules()" style="width: auto; padding: 5px 8px; background: #333; font-size: 10px;">📜 Rules</button>
+                <button onclick="openMembers()" style="width: auto; padding: 5px 8px; background: #333; font-size: 10px;">👥 Members <span id="mem-count"></span></button>
+                <button id="admin-reset-btn" class="hidden" onclick="adminResetAll()" style="background: var(--danger); font-size: 10px; width: auto; padding: 5px 8px;">RESET</button>
             </div>
-            <button onclick="location.reload()" style="width: auto; padding: 8px 15px; background: #333; font-size: 12px;">Log Out</button>
+            <button onclick="location.reload()" style="width: auto; padding: 6px 12px; background: #444; font-size: 12px;">Log Out</button>
         </div>
-
         <div id="messages"></div>
-
         <div id="input-area">
-            <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button onclick="sendMessage()" style="width: 70px;">Send</button>
+        </div>
+    </div>
+
+    <div id="rules-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2 style="color: var(--primary);">ClareCool Rules</h2>
+            <div style="text-align: left; font-size: 13px; color: #ccc; line-height: 1.6;">
+                1. No swearing or hate speech of any kind.<br>
+                2. Nothing prohibited by the school system.<br>
+                3. No spamming.<br>
+                4. All animals are equal but some are more equal than others.
+            </div>
+            <button onclick="closeModals()" style="margin-top: 20px;">I Agree</button>
+        </div>
+    </div>
+
+    <div id="members-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Community Members</h3>
+            <div id="member-list-container" style="max-height: 300px; overflow-y: auto;"></div>
+            <button onclick="closeModals()" style="background: #444; margin-top: 15px;">Close</button>
         </div>
     </div>
 
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <img id="view-pfp" class="profile-pic-large" src="">
-            <h2 id="view-name">User</h2>
-            <div id="view-status" style="color: var(--primary); font-style: italic; margin-bottom: 15px;">No status</div>
-            
+            <img id="view-pfp" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+            <h2 id="view-name"></h2>
+            <div id="view-status" style="color: var(--primary); font-style: italic; margin-bottom: 20px;"></div>
             <button onclick="closeModals()" style="background: #444;">Close</button>
-            
-            <button id="ban-user-btn" class="hidden admin-nuke-btn" onclick="banUser()">⚠️ DELETE ACCOUNT ⚠️</button>
+            <button id="ban-user-btn" class="hidden" onclick="banUser()" style="background: var(--danger); margin-top: 10px; font-size: 11px;">⚠️ DELETE ACCOUNT ⚠️</button>
         </div>
     </div>
 
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <h3>My Settings</h3>
-            <p style="font-size: 12px; color: #888;">Profile Picture</p>
+            <h3>Account Settings</h3>
+            <p style="font-size: 11px; color: #888;">Update Profile Picture:</p>
             <input type="file" id="file-upload" accept="image/*" onchange="uploadPFP(event)">
-            <p style="font-size: 12px; color: #888; margin-top: 15px;">My Status</p>
-            <input type="text" id="status-input" placeholder="e.g. Gaming...">
-            <button onclick="saveSettings()">Save Changes</button>
-            <button onclick="closeModals()" style="background: #444; margin-top: 5px;">Cancel</button>
+            <p style="font-size: 11px; color: #888; margin-top: 10px;">Update Status:</p>
+            <input type="text" id="status-input" placeholder="What's on your mind?">
+            <button onclick="saveSettings()">Save</button>
+            <button onclick="closeModals()" style="background: #444;">Cancel</button>
         </div>
     </div>
 
@@ -256,9 +130,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // --------------------------------------------------------------
-        // 1. YOUR CONFIG HERE (Keep your real keys!)
-        // --------------------------------------------------------------
+        // --- PASTE YOUR CONFIG BELOW ---
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
         authDomain: "mychat-28205.firebaseapp.com",
@@ -269,40 +141,33 @@
         appId: "1:522121848657:web:7108993439310bf6da5570",
         measurementId: "G-YFMS0DNREW"
         };
-        // --------------------------------------------------------------
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
         let isLoginMode = true;
-        let viewedUser = null; // Who are we looking at in the modal?
+        let viewedUser = null;
 
-        // --- AUTH ---
         function toggleMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V3" : "Sign Up";
+            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1" : "Sign Up";
             document.getElementById('main-auth-btn').innerText = isLoginMode ? "Login" : "Create Account";
-            document.getElementById('toggle-auth-text').innerText = isLoginMode ? "No account? Create one" : "Have an account? Login";
+            document.getElementById('toggle-auth-text').innerText = isLoginMode ? "New here? Sign Up" : "Have an account? Login";
         }
 
         async function handleLogin() {
             const user = document.getElementById('username-in').value.trim().toLowerCase();
             const pass = document.getElementById('password-in').value.trim();
             if (!user || !pass) return alert("Fill in everything!");
-
             const snap = await db.ref("users/" + user).once("value");
             const data = snap.val();
-
             if (isLoginMode) {
-                if (!data) return alert("User not found!");
-                if (data.password !== pass) return alert("Wrong password!");
+                if (!data || data.password !== pass) return alert("Login failed!");
                 enterApp(user);
             } else {
                 if (data) return alert("Username taken!");
-                await db.ref("users/" + user).set({
-                    password: pass, pfp: "", status: "New member", joined: Date.now()
-                });
+                await db.ref("users/" + user).set({ password: pass, pfp: "", status: "New Member" });
                 enterApp(user);
             }
         }
@@ -311,204 +176,115 @@
             currentUser = username;
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
-
-            // Admin Check
-            if (currentUser === "bartelsfamily5") {
-                document.getElementById('admin-reset-btn').classList.remove('hidden');
-            }
-
-            // Load My Data
+            if (currentUser === "bartelsfamily5") document.getElementById('admin-reset-btn').classList.remove('hidden');
+            
             db.ref("users/" + currentUser).on("value", snap => {
-                const data = snap.val();
-                if(data) {
-                    document.getElementById('my-mini-pfp').src = data.pfp || "https://via.placeholder.com/40";
-                    document.getElementById('status-input').value = data.status || "";
-                }
+                if(snap.val()) document.getElementById('my-mini-pfp').src = snap.val().pfp || "https://via.placeholder.com/40";
+            });
+
+            db.ref("users").on("value", snap => {
+                const count = snap.numChildren();
+                document.getElementById('mem-count').innerText = `(${count})`;
             });
 
             loadMessages();
         }
 
-        // --- CHAT LOGIC ---
         function loadMessages() {
             const msgBox = document.getElementById('messages');
-            
-            // Listen for any changes (add, remove, like updates)
             db.ref("messages").limitToLast(50).on("value", (snapshot) => {
                 msgBox.innerHTML = "";
                 const allMsgs = snapshot.val() || {};
-                
-                Object.keys(allMsgs).forEach(key => {
-                    const data = allMsgs[key];
-                    renderMessage(key, data, msgBox);
-                });
+                Object.keys(allMsgs).forEach(key => renderMessage(key, allMsgs[key], msgBox));
                 msgBox.scrollTop = msgBox.scrollHeight;
             });
         }
 
         function renderMessage(key, data, container) {
             const isMe = data.username === currentUser;
-            const isAdmin = currentUser === "bartelsfamily5";
-            
             const row = document.createElement('div');
             row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
-
-            // PFP
-            const pfpImg = document.createElement('img');
-            pfpImg.className = 'pfp-small';
-            pfpImg.src = data.pfp || "https://via.placeholder.com/40";
-            pfpImg.onclick = () => showProfile(data.username);
-
-            // Bubble Content
-            const bubble = document.createElement('div');
-            bubble.className = 'msg-bubble';
-            bubble.innerHTML = `<div>${data.text}</div>`;
-
-            // Likes & Delete Section
-            const actionDiv = document.createElement('div');
-            actionDiv.className = 'msg-actions';
-            
-            // Like Button
             const likeCount = data.likes ? Object.keys(data.likes).length : 0;
-            const isLiked = data.likes && data.likes[currentUser];
-            const heartIcon = isLiked ? "❤️" : "🤍";
-            
-            const likeBtn = document.createElement('button');
-            likeBtn.className = `like-btn ${isLiked ? 'liked' : ''}`;
-            likeBtn.innerHTML = `${heartIcon} <span class="like-count">${likeCount || ''}</span>`;
-            likeBtn.onclick = () => toggleLike(key);
-            
-            actionDiv.appendChild(likeBtn);
+            const liked = data.likes && data.likes[currentUser];
 
-            // Admin Delete Button (Only if Admin!)
-            if (isAdmin) {
-                const delBtn = document.createElement('button');
-                delBtn.className = 'delete-msg-btn';
-                delBtn.innerText = '🗑️';
-                delBtn.onclick = () => deleteMessage(key);
-                actionDiv.appendChild(delBtn);
-            }
-
-            bubble.appendChild(actionDiv);
-
-            // Assemble
-            if (!isMe) {
-                const nameTag = document.createElement('div');
-                nameTag.className = 'username-label';
-                nameTag.innerText = data.username;
-                const wrapper = document.createElement('div');
-                wrapper.appendChild(nameTag);
-                wrapper.appendChild(bubble);
-                row.appendChild(pfpImg);
-                row.appendChild(wrapper);
-            } else {
-                row.appendChild(bubble);
-                row.appendChild(pfpImg);
-            }
-
+            row.innerHTML = `
+                <img src="${data.pfp || 'https://via.placeholder.com/40'}" class="pfp-small" onclick="showProfile('${data.username}')">
+                <div>
+                    ${!isMe ? `<div class="username-label">${data.username}</div>` : ''}
+                    <div class="msg-bubble">
+                        ${data.text}
+                        <div class="msg-actions">
+                            <button class="like-btn ${liked ? 'liked' : ''}" onclick="toggleLike('${key}')">${liked?'❤️':'🤍'} ${likeCount || ''}</button>
+                            ${currentUser === "bartelsfamily5" ? `<button class="delete-msg-btn" onclick="deleteMessage('${key}')">🗑️</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
             container.appendChild(row);
         }
 
         async function sendMessage() {
             const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if (!text) return;
-
+            if (!input.value.trim()) return;
             const userSnap = await db.ref("users/" + currentUser).once("value");
-            const currentPFP = userSnap.val().pfp || "";
-
             db.ref("messages").push().set({
-                username: currentUser,
-                text: text,
-                pfp: currentPFP,
-                timestamp: Date.now()
+                username: currentUser, text: input.value.trim(), pfp: userSnap.val().pfp || "", timestamp: Date.now()
             });
             input.value = "";
         }
 
-        // --- NEW FEATURES ---
+        function toggleLike(id) {
+            const ref = db.ref(`messages/${id}/likes/${currentUser}`);
+            ref.once("value", s => s.exists() ? ref.remove() : ref.set(true));
+        }
 
-        function toggleLike(msgId) {
-            const likeRef = db.ref(`messages/${msgId}/likes/${currentUser}`);
-            likeRef.once("value", snap => {
-                if (snap.exists()) {
-                    likeRef.remove(); // Unlike
-                } else {
-                    likeRef.set(true); // Like
+        function deleteMessage(id) { if(confirm("Delete message?")) db.ref(`messages/${id}`).remove(); }
+        function adminResetAll() { if(confirm("RESET ALL MESSAGES?")) db.ref("messages").remove(); }
+
+        function openRules() { document.getElementById('rules-modal').classList.remove('hidden'); }
+        async function openMembers() {
+            const list = document.getElementById('member-list-container');
+            list.innerHTML = "Loading...";
+            document.getElementById('members-modal').classList.remove('hidden');
+            const snap = await db.ref("users").once("value");
+            list.innerHTML = "";
+            Object.keys(snap.val()).forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'member-item';
+                div.innerHTML = `<span onclick="closeModals();showProfile('${u}')" style="cursor:pointer">${u}</span>`;
+                if(currentUser === "bartelsfamily5" && u !== "bartelsfamily5") {
+                    const b = document.createElement('button');
+                    b.innerText = "BAN"; b.style = "width:auto; padding:4px; font-size:9px; background:red;";
+                    b.onclick = () => { viewedUser = u; banUser(); };
+                    div.appendChild(b);
                 }
+                list.appendChild(div);
             });
         }
-
-        function deleteMessage(msgId) {
-            if(confirm("Admin: Delete this message?")) {
-                db.ref(`messages/${msgId}`).remove();
-            }
-        }
-
-        function adminResetAll() {
-            if(confirm("⚠️ NUKE WARNING: This deletes ALL messages. Sure?")) {
-                db.ref("messages").remove();
-            }
-        }
-
-        function banUser() {
-            if (!viewedUser) return;
-            const verify = prompt(`Type "DELETE" to ban ${viewedUser} forever.`);
-            if (verify === "DELETE") {
-                db.ref("users/" + viewedUser).remove();
-                alert(`User ${viewedUser} has been deleted.`);
-                closeModals();
-            }
-        }
-
-        // --- PROFILE & SETTINGS ---
 
         async function showProfile(name) {
             viewedUser = name;
             const snap = await db.ref("users/" + name).once("value");
             const data = snap.val();
-            
-            if (data) {
-                document.getElementById('view-name').innerText = name;
-                document.getElementById('view-status').innerText = "\"" + (data.status || "No status") + "\"";
-                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
-                
-                // Show Ban Hammer if Admin
-                const banBtn = document.getElementById('ban-user-btn');
-                if (currentUser === "bartelsfamily5" && name !== "bartelsfamily5") {
-                    banBtn.classList.remove('hidden');
-                } else {
-                    banBtn.classList.add('hidden');
-                }
-
-                document.getElementById('profile-modal').classList.remove('hidden');
-            } else {
-                alert("User not found (maybe they were deleted?)");
-            }
+            document.getElementById('view-name').innerText = name;
+            document.getElementById('view-status').innerText = `"${data.status || 'No status'}"`;
+            document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
+            if(currentUser === "bartelsfamily5" && name !== "bartelsfamily5") document.getElementById('ban-user-btn').classList.remove('hidden');
+            else document.getElementById('ban-user-btn').classList.add('hidden');
+            document.getElementById('profile-modal').classList.remove('hidden');
         }
 
-        function openSettings() {
-            document.getElementById('settings-modal').classList.remove('hidden');
-        }
+        function banUser() { if(confirm(`Delete account ${viewedUser}?`)) { db.ref("users/" + viewedUser).remove(); closeModals(); } }
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.add('hidden')); }
 
-        function closeModals() {
-            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.add('hidden'));
-        }
-
-        function uploadPFP(event) {
-            const file = event.target.files[0];
-            if (file.size > 500000) return alert("Too big!");
+        function uploadPFP(e) {
             const reader = new FileReader();
-            reader.onload = function() {
-                db.ref("users/" + currentUser).update({ pfp: reader.result });
-                alert("Saved!");
-            };
-            reader.readAsDataURL(file);
+            reader.onload = () => { db.ref("users/" + currentUser).update({ pfp: reader.result }); alert("Saved!"); };
+            reader.readAsDataURL(e.target.files[0]);
         }
-
         function saveSettings() {
-            const stat = document.getElementById('status-input').value;
-            db.ref("users/" + currentUser).update({ status: stat });
+            db.ref("users/" + currentUser).update({ status: document.getElementById('status-input').value });
             closeModals();
         }
     </script>
