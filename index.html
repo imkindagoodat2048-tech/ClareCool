@@ -44,6 +44,11 @@
         .like-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 3px; padding: 0; }
         .like-btn.liked { color: #ff4757; }
         .action-icon-btn { background: none; border: none; cursor: pointer; color: #555; font-size: 12px; padding: 0; }
+        
+        /* Member List Items */
+        .member-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #333; }
+        .member-btn-group { margin-left: auto; display: flex; gap: 5px; }
+        .btn-mini { padding: 4px 8px; font-size: 10px; width: auto; margin-top: 0; }
 
         /* Modals */
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -56,7 +61,7 @@
 </head>
 <body>
 
-    <div id="warning-banner" class="hidden">⚠️ WARNING FROM ADMIN. FOLLOW THE RULES. <button onclick="this.parentElement.remove()" style="width:auto; padding:2px 10px; background:white; color:black; border:none; border-radius:3px; cursor:pointer;">X</button></div>
+    <div id="warning-banner" class="hidden">⚠️WARNING. MORE THAN 3 WARNINGS MAY ISSUE A BAN. IF YOU THINK THIS IS A MISTAKE, CLICK OUT.⚠️ <button onclick="this.parentElement.remove()" style="width:auto; padding:2px 10px; background:white; color:black; border:none; border-radius:3px; cursor:pointer;">X</button></div>
 
     <div id="auth-container">
         <h2 id="auth-header">ClareCool V1.1</h2>
@@ -75,6 +80,7 @@
                     <option value="messages">Global</option>
                 </select>
                 <button onclick="showMembers()" style="width:auto; padding:5px; background:#444; font-size:10px;">👥</button>
+                <button id="meeting-btn" class="hidden" onclick="triggerMeeting()" style="width:auto; padding:5px; background: #e74c3c; font-size: 10px;">🚨</button>
                 <button onclick="openRules()" style="width: auto; padding: 5px; background: #333; font-size: 10px;">📜</button>
                 <button id="gc-btn" class="hidden" onclick="openGCCreator()" style="width:auto; padding:5px; background: #27ae60; font-size: 10px;">+</button>
                 <button id="inbox-btn" class="hidden" onclick="openInbox()" style="width:auto; padding:5px; background: #e67e22; font-size: 10px;">📥</button>
@@ -170,6 +176,7 @@
         let isLoginMode = true;
         let currentPath = "messages";
         let reportTarget = null;
+        const meetingCrew = ["44", "hunter", "bboy2014", "bartelsfamily5"];
 
         function toggleMode() { isLoginMode = !isLoginMode; document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.1" : "Sign Up"; }
 
@@ -179,11 +186,13 @@
             if(!user || !pass) return;
             const snap = await db.ref("users/" + user).once("value");
             if (isLoginMode) {
-                if(snap.val() && snap.val().password === pass) enterApp(user);
-                else alert("Error");
+                if(snap.val() && snap.val().password === pass) {
+                    if(snap.val().banned) return alert("You are BANNED.");
+                    enterApp(user);
+                } else alert("Error");
             } else {
                 if(snap.exists()) return alert("Taken");
-                await db.ref("users/" + user).set({ password: pass, pfp: "", status: "Member", warned: false });
+                await db.ref("users/" + user).set({ password: pass, pfp: "", status: "Member", warned: false, banned: false });
                 enterApp(user);
             }
         }
@@ -192,16 +201,36 @@
             currentUser = user;
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
+            
             if(user === "bartelsfamily5") {
                 document.getElementById('inbox-btn').classList.remove('hidden');
                 document.getElementById('gc-btn').classList.remove('hidden');
             }
+
+            if(meetingCrew.includes(user)) document.getElementById('meeting-btn').classList.remove('hidden');
+
             db.ref("users/"+user).on("value", s => {
                 if(s.val() && s.val().warned) document.getElementById('warning-banner').classList.remove('hidden');
+                if(s.val() && s.val().banned) location.reload();
                 document.getElementById('my-mini-pfp').src = s.val().pfp || 'https://via.placeholder.com/40';
             });
+
+            // Meeting Alert Listener
+            db.ref("alerts/meeting").on("value", snap => {
+                if(snap.val() && snap.val().active && snap.val().by !== currentUser) {
+                    alert("🚨 EMERGENCY MEETING CALLED BY: " + snap.val().by);
+                    db.ref("alerts/meeting").update({active: false}); 
+                }
+            });
+
             loadGCList();
             loadMessages();
+        }
+
+        function triggerMeeting() {
+            if(confirm("Call an Emergency Meeting?")) {
+                db.ref("alerts/meeting").set({ active: true, by: currentUser, time: Date.now() });
+            }
         }
 
         function loadMessages() {
@@ -226,6 +255,37 @@
                     box.appendChild(row);
                 });
                 box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        async function showMembers() {
+            const snap = await db.ref("users").once("value");
+            const list = document.getElementById('member-list'); list.innerHTML = "";
+            snap.forEach(u => {
+                const userData = u.val();
+                const div = document.createElement('div');
+                div.className = 'member-item';
+                div.innerHTML = `
+                    <img src="${userData.pfp || 'https://via.placeholder.com/40'}" class="pfp-small" onclick="viewProfile('${u.key}')">
+                    <span>${u.key}</span>
+                    ${currentUser === 'bartelsfamily5' ? `
+                    <div class="member-btn-group">
+                        <button class="btn-mini" style="background:#e67e22" onclick="warnUser('${u.key}')">Warn</button>
+                        <button class="btn-mini" style="background:${userData.banned ? '#27ae60' : '#ff4757'}" onclick="banUser('${u.key}')">${userData.banned ? 'Unban' : 'Ban'}</button>
+                    </div>` : ''}
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('member-modal').classList.remove('hidden');
+        }
+
+        function warnUser(user) { db.ref("users/" + user).update({ warned: true }); alert("Warned " + user); }
+        function banUser(user) { 
+            db.ref("users/" + user + "/banned").once("value", s => {
+                const isBanned = s.val();
+                db.ref("users/" + user).update({ banned: !isBanned });
+                alert(isBanned ? "Unbanned " + user : "Banned " + user);
+                showMembers(); // Refresh list to update button text
             });
         }
 
@@ -276,11 +336,6 @@
             });
         }
 
-        function warnUser(user) {
-            db.ref("users/" + user).update({ warned: true });
-            alert("Warning banner sent to " + user);
-        }
-
         function clearReports() {
             if(confirm("Clear all reports?")) db.ref("reports").remove();
         }
@@ -313,13 +368,6 @@
                     }
                 });
             });
-        }
-
-        async function showMembers() {
-            const snap = await db.ref("users").once("value");
-            const list = document.getElementById('member-list'); list.innerHTML = "";
-            snap.forEach(u => { list.innerHTML += `<div>• ${u.key}</div>`; });
-            document.getElementById('member-modal').classList.remove('hidden');
         }
 
         function toggleLike(id) {
