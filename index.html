@@ -3,84 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClareCool Chat</title>
+    <title>ClareCool Chat V2</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        /* --- MODERN DARK THEME --- */
+        :root {
+            --bg-color: #0f0f13;
+            --chat-bg: #1a1a20;
+            --primary: #6c5ce7; /* Cool Purple */
+            --primary-hover: #5649c0;
+            --text-white: #ffffff;
+            --text-grey: #a0a0a0;
+            --msg-self: #6c5ce7;
+            --msg-other: #2d2d3a;
+            --danger: #ff4757;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-white); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
         .hidden { display: none !important; }
-        
-        /* Auth Screen */
-        #auth-container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #333; align-self: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; }
-        button { width: 95%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #0056b3; }
 
-        /* Chat Layout */
-        #chat-container { width: 100%; max-width: 800px; height: 100vh; display: flex; flex-direction: column; background: #181818; position: relative; }
-        #top-bar { padding: 15px; background: #222; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        /* --- AUTH SCREEN --- */
+        #auth-container {
+            align-self: center;
+            background: var(--chat-bg);
+            padding: 40px;
+            border-radius: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
         
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .message { display: flex; align-items: flex-start; gap: 12px; background: #2a2a2a; padding: 12px; border-radius: 12px; max-width: 85%; }
+        h2 { margin-top: 0; color: var(--primary); }
         
-        .pfp { width: 45px; height: 45px; background: #444; border-radius: 10px; object-fit: cover; cursor: pointer; border: 2px solid #555; }
-        .username { color: #007bff; font-weight: bold; cursor: pointer; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            background: #0f0f13;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+            outline: none;
+        }
+        
+        input:focus { border-color: var(--primary); }
 
-        #input-area { padding: 20px; background: #222; display: flex; gap: 10px; border-top: 1px solid #333; }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-        /* Modals */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 30px; border-radius: 20px; border: 2px solid #007bff; z-index: 100; text-align: center; min-width: 260px; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 90; }
-        .profile-img-large { width: 120px; height: 120px; border-radius: 20px; margin-bottom: 15px; object-fit: cover; border: 3px solid #007bff; background: #444; }
+        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+        /* --- CHAT INTERFACE --- */
+        #chat-wrapper {
+            width: 100%;
+            max-width: 900px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+            border-left: 1px solid #333;
+            border-right: 1px solid #333;
+        }
+
+        #top-bar {
+            padding: 15px 20px;
+            background: rgba(26, 26, 32, 0.95);
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        /* --- MESSAGES AREA --- */
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Scrollbar styling */
+        #messages::-webkit-scrollbar { width: 8px; }
+        #messages::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            max-width: 75%;
+            animation: popIn 0.2s ease-out;
+        }
         
-        /* Status Badge */
-        .status-text { color: #00ff88; font-style: italic; margin-bottom: 15px; display: block; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Logic for Self vs Other */
+        .row-self { align-self: flex-end; flex-direction: row-reverse; }
+        .row-other { align-self: flex-start; }
+
+        .msg-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .row-self .msg-bubble {
+            background: var(--msg-self);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .row-other .msg-bubble {
+            background: var(--msg-other);
+            color: #ddd;
+            border-bottom-left-radius: 4px;
+        }
+
+        .pfp-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--chat-bg);
+        }
+
+        .username-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 2px;
+            margin-left: 5px;
+        }
+        
+        .row-self .username-label { display: none; } /* Hide name for self */
+
+        /* --- INPUT AREA --- */
+        #input-area {
+            padding: 20px;
+            background: var(--chat-bg);
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: #222;
+            padding: 30px;
+            border-radius: 20px;
+            width: 300px;
+            text-align: center;
+            border: 1px solid #444;
+            position: relative;
+        }
+
+        .profile-pic-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .status-display {
+            color: var(--primary);
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .close-btn { background: #444; margin-top: 10px; }
+
+        /* ADMIN BUTTON */
+        #admin-reset-btn {
+            background: var(--danger);
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-left: 10px;
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="overlay" class="overlay hidden" onclick="closeModals()"></div>
-
     <div id="auth-container">
-        <h2 id="auth-title">Welcome Back</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button id="auth-btn" onclick="handleAuth()">Login</button>
-        <p onclick="toggleAuth()" style="font-size: 12px; cursor: pointer; color: #aaa; margin-top: 15px;" id="toggle-text">New here? Sign Up</p>
+        <h2 id="auth-header">ClareCool V2</h2>
+        <input type="text" id="username-in" placeholder="Username">
+        <input type="password" id="password-in" placeholder="Password">
+        <button id="main-auth-btn" onclick="handleLogin()">Login</button>
+        <button onclick="toggleMode()" style="background: transparent; color: #888; margin-top: 5px; font-size: 12px;" id="toggle-auth-text">No account? Create one</button>
     </div>
 
-    <div id="chat-container" class="hidden">
+    <div id="chat-wrapper" class="hidden">
         <div id="top-bar">
-            <button onclick="toggleSettings()" style="width: auto; padding: 8px 15px; background: #333;">⚙️ Settings</button>
-            <span style="font-weight: bold; color: #007bff;">ClareCool</span>
-            <button onclick="location.reload()" style="width: auto; padding: 8px 15px; background: #dc3545;">Log Out</button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img id="my-mini-pfp" class="pfp-small" src="https://via.placeholder.com/40" onclick="openSettings()">
+                <span style="font-weight: bold;">ClareCool Chat</span>
+                <button id="admin-reset-btn" class="hidden" onclick="adminNuke()">RESET CHAT</button>
+            </div>
+            <button onclick="location.reload()" style="width: auto; padding: 8px 15px; background: #333; font-size: 12px;">Log Out</button>
         </div>
+
         <div id="messages"></div>
+
         <div id="input-area">
-            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()" style="width: 80px;">Send</button>
+            <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" style="width: 70px;">Send</button>
         </div>
     </div>
 
-    <div id="settings-modal" class="modal hidden">
-        <h3>Edit Profile</h3>
-        <input type="text" id="status-input" placeholder="Your status...">
-        <p style="font-size: 12px; color: #888;">Update PFP:</p>
-        <input type="file" id="pfp-upload" accept="image/*" onchange="updatePFP(event)">
-        <br><br>
-        <button onclick="saveSettings()">Save & Close</button>
+    <div id="profile-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <img id="view-pfp" class="profile-pic-large" src="">
+            <h2 id="view-name">User</h2>
+            <div id="view-status" class="status-display">No status</div>
+            <button class="close-btn" onclick="closeModals()">Close</button>
+        </div>
     </div>
 
-    <div id="profile-modal" class="modal hidden">
-        <img id="view-pfp" class="profile-img-large" src="">
-        <h2 id="view-name"></h2>
-        <span id="view-status" class="status-text"></span>
-        <button onclick="closeModals()" style="background: #444;">Close</button>
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>My Settings</h3>
+            <p style="font-size: 12px; color: #888;">Profile Picture</p>
+            <input type="file" id="file-upload" accept="image/*" onchange="uploadPFP(event)">
+            
+            <p style="font-size: 12px; color: #888; margin-top: 15px;">My Status</p>
+            <input type="text" id="status-input" placeholder="e.g. Gaming...">
+            
+            <button onclick="saveSettings()">Save Changes</button>
+            <button class="close-btn" onclick="closeModals()">Cancel</button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // --- 1. CONFIG (PASTE YOURS HERE) ---
+        // --------------------------------------------------------------
+        // 1. PASTE YOUR FIREBASE KEYS HERE
+        // --------------------------------------------------------------
         const firebaseConfig = {
         apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
         authDomain: "mychat-28205.firebaseapp.com",
@@ -91,133 +294,182 @@
         appId: "1:522121848657:web:7108993439310bf6da5570",
         measurementId: "G-YFMS0DNREW"
         };
+        // --------------------------------------------------------------
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
-        let isLogin = true;
+        let isLoginMode = true;
 
-        function toggleAuth() {
-            isLogin = !isLogin;
-            document.getElementById('auth-title').innerText = isLogin ? "Welcome Back" : "Create Account";
-            document.getElementById('auth-btn').innerText = isLogin ? "Login" : "Sign Up";
-            document.getElementById('toggle-text').innerText = isLogin ? "New here? Sign Up" : "Have an account? Login";
+        // --- AUTH LOGIC ---
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V2" : "Sign Up";
+            document.getElementById('main-auth-btn').innerText = isLoginMode ? "Login" : "Create Account";
+            document.getElementById('toggle-auth-text').innerText = isLoginMode ? "No account? Create one" : "Have an account? Login";
         }
 
-        async function handleAuth() {
-            const user = document.getElementById('username').value.trim().toLowerCase();
-            const pass = document.getElementById('password').value.trim();
-            if (!user || !pass) return alert("Missing info!");
+        async function handleLogin() {
+            const user = document.getElementById('username-in').value.trim().toLowerCase();
+            const pass = document.getElementById('password-in').value.trim();
 
-            const userRef = db.ref("users/" + user);
-            const snapshot = await userRef.once("value");
-            const userData = snapshot.val();
+            if (!user || !pass) return alert("Please fill in everything!");
 
-            if (isLogin) {
-                if (userData && userData.password === pass) {
-                    enterChat(user);
-                } else { alert("Wrong password or user!"); }
+            const snap = await db.ref("users/" + user).once("value");
+            const data = snap.val();
+
+            if (isLoginMode) {
+                // Strict Login
+                if (!data) return alert("User doesn't exist!");
+                if (data.password !== pass) return alert("Wrong password!");
+                enterApp(user);
             } else {
-                if (userData) { alert("Taken!"); }
-                else {
-                    // Initial Save: Sets up the profile for the first time
-                    await userRef.set({ password: pass, pfp: "", status: "Just joined!" });
-                    enterChat(user);
-                }
+                // Strict Sign Up
+                if (data) return alert("Username taken!");
+                await db.ref("users/" + user).set({
+                    password: pass,
+                    pfp: "",
+                    status: "New member",
+                    joined: Date.now()
+                });
+                enterApp(user);
             }
         }
 
-        function enterChat(username) {
+        function enterApp(username) {
             currentUser = username;
             document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('chat-container').classList.remove('hidden');
-            
-            // Sync current user's status to settings input
-            db.ref("users/" + currentUser).once("value", snap => {
-                if(snap.val()) document.getElementById('status-input').value = snap.val().status || "";
-            });
-            
-            loadMessages();
-        }
+            document.getElementById('chat-wrapper').classList.remove('hidden');
 
-        function toggleSettings() {
-            document.getElementById('overlay').classList.toggle('hidden');
-            document.getElementById('settings-modal').classList.toggle('hidden');
-        }
-
-        function saveSettings() {
-            const newStatus = document.getElementById('status-input').value;
-            db.ref("users/" + currentUser).update({ status: newStatus });
-            closeModals();
-        }
-
-        function updatePFP(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const base64 = reader.result;
-                db.ref("users/" + currentUser).update({ pfp: base64 }).then(() => {
-                    alert("Profile Picture Saved!");
-                });
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        async function showProfile(name) {
-            const snapshot = await db.ref("users/" + name.toLowerCase()).once("value");
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('view-name').innerText = name;
-                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/120";
-                document.getElementById('view-status').innerText = data.status || "No status";
-                document.getElementById('overlay').classList.remove('hidden');
-                document.getElementById('profile-modal').classList.remove('hidden');
+            // Setup Admin Button
+            if (currentUser === "bartelsfamily5") {
+                document.getElementById('admin-reset-btn').classList.remove('hidden');
             }
+
+            // Load My Data
+            db.ref("users/" + currentUser).on("value", snap => {
+                const data = snap.val();
+                if(data) {
+                    document.getElementById('my-mini-pfp').src = data.pfp || "https://via.placeholder.com/40";
+                    document.getElementById('status-input').value = data.status || "";
+                }
+            });
+
+            startChatListener();
         }
 
-        function closeModals() {
-            document.getElementById('overlay').classList.add('hidden');
-            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+        // --- CHAT LOGIC ---
+        function startChatListener() {
+            const msgBox = document.getElementById('messages');
+            
+            db.ref("messages").limitToLast(50).on("child_added", (snapshot) => {
+                const data = snapshot.val();
+                const isMe = data.username === currentUser;
+                
+                const row = document.createElement('div');
+                row.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
+
+                // PFP Logic
+                const pfpImg = document.createElement('img');
+                pfpImg.className = 'pfp-small';
+                pfpImg.src = data.pfp || "https://via.placeholder.com/40";
+                pfpImg.onclick = () => showProfile(data.username);
+
+                // Bubble Logic
+                const bubble = document.createElement('div');
+                bubble.className = 'msg-bubble';
+                bubble.innerText = data.text;
+
+                // Name Tag (only for others)
+                if (!isMe) {
+                    const nameTag = document.createElement('div');
+                    nameTag.className = 'username-label';
+                    nameTag.innerText = data.username;
+                    // Assemble: Name -> Bubble
+                    const wrapper = document.createElement('div');
+                    wrapper.appendChild(nameTag);
+                    wrapper.appendChild(bubble);
+                    row.appendChild(pfpImg);
+                    row.appendChild(wrapper);
+                } else {
+                    // Assemble Me: Bubble -> PFP
+                    row.appendChild(bubble);
+                    row.appendChild(pfpImg);
+                }
+
+                msgBox.appendChild(row);
+                msgBox.scrollTop = msgBox.scrollHeight;
+            });
+
+            // Handle Reset
+            db.ref("messages").on("child_removed", () => {
+                msgBox.innerHTML = ""; // Clear screen if admin nukes
+            });
         }
 
         async function sendMessage() {
-            const text = document.getElementById('msg-input').value;
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
             if (!text) return;
 
-            // Fetch latest PFP right when sending to ensure it's up to date
+            // Get latest PFP before sending
             const userSnap = await db.ref("users/" + currentUser).once("value");
-            const pfp = userSnap.val().pfp || "";
+            const currentPFP = userSnap.val().pfp || "";
 
             db.ref("messages").push().set({
                 username: currentUser,
                 text: text,
-                pfp: pfp,
+                pfp: currentPFP,
                 timestamp: Date.now()
             });
-            document.getElementById('msg-input').value = "";
+            input.value = "";
         }
 
-        function loadMessages() {
-            db.ref("messages").limitToLast(50).on("value", (snapshot) => {
-                const msgArea = document.getElementById('messages');
-                msgArea.innerHTML = "";
-                snapshot.forEach((child) => {
-                    const data = child.val();
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = 'message';
-                    const pfpSrc = data.pfp || "https://via.placeholder.com/45";
-                    
-                    msgDiv.innerHTML = `
-                        <img src="${pfpSrc}" class="pfp" onclick="showProfile('${data.username}')">
-                        <div>
-                            <span class="username" onclick="showProfile('${data.username}')">${data.username}</span>
-                            <div style="margin-top: 5px;">${data.text}</div>
-                        </div>
-                    `;
-                    msgArea.appendChild(msgDiv);
-                });
-                msgArea.scrollTop = msgArea.scrollHeight;
-            });
+        // --- ADMIN LOGIC ---
+        function adminNuke() {
+            if (confirm("WARNING: This will delete ALL messages for everyone. Do it?")) {
+                db.ref("messages").remove();
+            }
+        }
+
+        // --- PROFILE & SETTINGS ---
+        async function showProfile(name) {
+            const snap = await db.ref("users/" + name).once("value");
+            const data = snap.val();
+            if (data) {
+                document.getElementById('view-name').innerText = name;
+                document.getElementById('view-status').innerText = "\"" + (data.status || "No status") + "\"";
+                document.getElementById('view-pfp').src = data.pfp || "https://via.placeholder.com/100";
+                document.getElementById('profile-modal').classList.remove('hidden');
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeModals() {
+            document.getElementById('profile-modal').classList.add('hidden');
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function uploadPFP(event) {
+            const file = event.target.files[0];
+            if (file.size > 500000) return alert("Image too large! Use a smaller one.");
+            
+            const reader = new FileReader();
+            reader.onload = function() {
+                db.ref("users/" + currentUser).update({ pfp: reader.result });
+                alert("Saved!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveSettings() {
+            const stat = document.getElementById('status-input').value;
+            db.ref("users/" + currentUser).update({ status: stat });
+            closeModals();
         }
     </script>
 </body>
