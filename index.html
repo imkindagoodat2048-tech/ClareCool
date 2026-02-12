@@ -109,7 +109,7 @@
         const db = firebase.database();
 
         let currentUser = null, isLoginMode = true, room = "messages", imgData = null, currentGCKey = null;
-        const admins = ["44", "hunter", "bboy2014", "bartelsfamily5"];
+        const admins = ["44", "bboy2014", "bartelsfamily5"];
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
@@ -187,11 +187,10 @@ function launch(u) {
         });
     }
 
-    // 5. NERD MODE: Special access for bartelsfamily5
-    if (u === "bartelsfamily5") {
-        const nerdBtn = document.getElementById('nerd-btn');
-        if (nerdBtn) nerdBtn.classList.remove('hidden');
-    }
+if (admins.includes(u)) {
+    const nerdBtn = document.getElementById('nerd-btn');
+    if (nerdBtn) nerdBtn.classList.remove('hidden');
+}
 
     // 6. INITIALIZE CONTENT
     loadMessages(); 
