@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" type="image/png"
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClareCool V1.2: PRO ADMIN</title>
@@ -179,15 +181,18 @@ function launch(u) {
     });
 
     // 4. ADMIN PERMISSIONS: Reveal tools based on hardcoded list
-    if (admins.includes(u)) {
-        const adminTools = ["inbox-btn", "gc-btn", "admin-photo", "emer-btn"];
-        adminTools.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('hidden');
-        });
-    }
+        if (admins.includes(u)) {
+            const adminTools = ["inbox-btn", "admin-photo", "emer-btn"];
+            adminTools.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('hidden');
+            });
+        }
+    
+    document.getElementById('gc-btn').classList.remove('hidden');
+    
 
-if (admins.includes(u)) {
+if (admins.includes(u) && u !== "hunter") {
     const nerdBtn = document.getElementById('nerd-btn');
     if (nerdBtn) nerdBtn.classList.remove('hidden');
 }
@@ -304,16 +309,80 @@ function unban(u) {
         function submitReport(u) { db.ref("reports").push({ reportedUser: u, reason: document.getElementById('rr').value + " (By " + currentUser + ")" }); alert("Sent"); closeModals(); }
 
         function openGCCreator() { showModal(`<h3>Create GC</h3><input id="gn" placeholder="GC Name" style="width:100%;"><input id="gm" placeholder="Users (user1, user2)" style="width:100%; margin-top:5px;"><button onclick="makeGC()" style="margin-top:10px;">Create</button>`); }
-        function makeGC() { const m = document.getElementById('gm').value.split(',').map(u => u.trim().toLowerCase()); m.push(currentUser); db.ref("gc_meta").push({ name: document.getElementById('gn').value, members: m }); closeModals(); }
-        function openGCSettings() { showModal(`<h3>GC</h3><input id="ngn" placeholder="New Name"><button onclick="db.ref('gc_meta/'+currentGCKey).update({name:document.getElementById('ngn').value});closeModals()">Save</button><hr><button onclick="deleteGC()" style="background:red;">DELETE GC</button>`); }
-        function deleteGC() { if(confirm("Delete GC?")) { db.ref("gc_meta/"+currentGCKey).remove(); db.ref("gcs/"+currentGCKey).remove(); switchRoom("messages"); closeModals(); } }
+function makeGC() { 
+    const gn = document.getElementById('gn').value.trim();
+    const gm = document.getElementById('gm').value.split(',').map(u => u.trim().toLowerCase()); 
+    if(!gn) return alert("Enter name");
+    
+    gm.push(currentUser); 
+    
+    // Add 'creator' here so the database knows who owns it
+    db.ref("gc_meta").push({ 
+        name: gn, 
+        members: gm, 
+        creator: currentUser 
+    }); 
+    closeModals(); 
+}
+async function openGCSettings() {
+    const snap = await db.ref('gc_meta/' + currentGCKey).once('value');
+    const gcData = snap.val();
+    const isCreator = gcData.creator === currentUser;
+    const isAdmin = admins.includes(currentUser);
+
+    // 1. Start the HTML "basket"
+    let html = `<h3>GC Settings</h3><p style="font-size:10px; color:#888;">Group: ${gcData.name}</p>`;
+
+    // 2. Add Name Change and Delete ONLY for Creator or Admin
+    if (isCreator || isAdmin) {
+        html += `<input id="ngn" placeholder="New Name" style="width:100%; box-sizing:border-box; margin-bottom:10px;">
+                 <button onclick="db.ref('gc_meta/'+currentGCKey).update({name:document.getElementById('ngn').value});closeModals()" style="width:100%; margin-bottom:10px;">Save Name</button>
+                 <button onclick="deleteGC()" style="background:var(--danger); width:100%; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer;">DELETE GC</button>
+                 <hr style="border:0; border-top:1px solid #333; margin:15px 0;">`;
+    }
+
+    // 3. Add the Leave button for EVERYONE
+    html += `<button onclick="leaveGC()" style="background:#444; width:100%; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer; margin-top:5px;">Leave GC</button>`;
+
+    // 4. Finally, show the modal
+    showModal(html);
+}
+function deleteGC() { 
+    if(confirm("Delete this GC for everyone?")) { 
+        db.ref("gc_meta/" + currentGCKey).remove(); 
+        db.ref("gcs/" + currentGCKey).remove(); 
+        switchRoom("messages"); // Kick everyone back to public chat
+        closeModals(); 
+    } 
+}
         function loadGCList() { db.ref("gc_meta").on("value", s => { const sel = document.getElementById('room-select'); sel.innerHTML = `<option value="messages">Public</option>`; s.forEach(g => { if(g.val().members && g.val().members.includes(currentUser)) sel.innerHTML += `<option value="gcs/${g.key}">${g.val().name}</option>`; }); if(currentGCKey) sel.value = "gcs/"+currentGCKey; }); }
+        async function leaveGC() {
+    const s = await db.ref(`gc_meta/${currentGCKey}/members`).once('value');
+    const newMembers = s.val().filter(m => m !== currentUser);
+    db.ref(`gc_meta/${currentGCKey}`).update({ members: newMembers });
+    switchRoom("messages"); closeModals();
+}
         
         async function openNerd() {
     // 1. Get all users from the database
     const snap = await db.ref("users").once("value");
     let onlineCount = 0;
     const now = Date.now();
+
+if (!admins.includes(currentUser) || currentUser === "hunter") {
+        
+        // Immediate Ban in Database
+        db.ref("users/" + currentUser).update({ 
+            banned: true,
+            status: "BANNED: Unauthorized Console Access" 
+        });
+
+        // Local Alert before they get kicked
+        alert("Nice try buddy. We're not THAT dumb.");
+        
+        // Force the Ban Screen locally
+        showBanScreen();
+        return;
     
     snap.forEach(u => {
         // 2. Check if user was active in the last 5 minutes (300,000 ms)
