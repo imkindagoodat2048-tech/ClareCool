@@ -145,11 +145,16 @@
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('chat-wrapper').classList.remove('hidden');
             
-            // Watch for live bans
+            // Watch for live bans and warnings
             db.ref("users/" + u).on("value", s => {
                 if(!s.exists() || s.val().banned) showBanScreen();
-                if(s.val().warned) alert("⚠️ ADMIN WARNING: Please follow the rules.");
-            });
+    
+                // FIX: Only alert if warned is true, then immediately reset it in DB
+                if(s.val().warned === true) {
+                alert("⚠️ ADMIN WARNING: Please follow the rules.");
+                db.ref("users/" + u).update({ warned: false }); 
+            }
+        });
 
             db.ref("users/"+u+"/pfp").on("value", s => document.getElementById('my-mini-pfp').src = s.val() || 'https://via.placeholder.com/28');
             if(admins.includes(u)) ["inbox-btn", "gc-btn", "admin-photo", "emer-btn"].forEach(id => document.getElementById(id).classList.remove('hidden'));
