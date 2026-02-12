@@ -140,27 +140,63 @@
             document.getElementById('ban-overlay').classList.remove('hidden');
         }
 
-        function launch(u) {
-            currentUser = u;
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('chat-wrapper').classList.remove('hidden');
-            
-            // Watch for live bans and warnings
-            db.ref("users/" + u).on("value", s => {
-                if(!s.exists() || s.val().banned) showBanScreen();
+function launch(u) {
+    currentUser = u;
     
-                // FIX: Only alert if warned is true, then immediately reset it in DB
-                if(s.val().warned === true) {
-                alert("⚠️ ADMIN WARNING: Please follow the rules.");
-                db.ref("users/" + u).update({ warned: false }); 
-            }
-        });
+    // UI Transitions
+    document.getElementById('auth-container').classList.add('hidden');
+    document.getElementById('chat-wrapper').classList.remove('hidden');
 
-            db.ref("users/"+u+"/pfp").on("value", s => document.getElementById('my-mini-pfp').src = s.val() || 'https://via.placeholder.com/28');
-            if(admins.includes(u)) ["inbox-btn", "gc-btn", "admin-photo", "emer-btn"].forEach(id => document.getElementById(id).classList.remove('hidden'));
-            if(u === "bartelsfamily5") document.getElementById('nerd-btn').classList.remove('hidden');
-            loadMessages(); loadGCList();
+    // 1. HEARTBEAT: Update 'lastSeen' immediately and every 1 minute
+    // This makes the "Active Players" count in Nerd Mode work.
+    db.ref("users/" + u).update({ lastSeen: Date.now() });
+    setInterval(() => {
+        if (currentUser) db.ref("users/" + currentUser).update({ lastSeen: Date.now() });
+    }, 60000);
+
+    // 2. LIVE MONITOR: Check for Bans and Warns
+    db.ref("users/" + u).on("value", s => {
+        if (!s.exists()) return;
+        const data = s.val();
+
+        // Instant lockout if banned
+        if (data.banned) {
+            showBanScreen();
+            return;
         }
+
+        // Single-use Warning logic
+        if (data.warned === true) {
+            alert("⚠️ ADMIN WARNING: Please follow the rules.");
+            // Immediately reset to false so it doesn't alert again on refresh
+            db.ref("users/" + u).update({ warned: false });
+        }
+    });
+
+    // 3. PFP SYNC: Keep the mini-PFP updated
+    db.ref("users/" + u + "/pfp").on("value", s => {
+        document.getElementById('my-mini-pfp').src = s.val() || 'https://via.placeholder.com/28';
+    });
+
+    // 4. ADMIN PERMISSIONS: Reveal tools based on hardcoded list
+    if (admins.includes(u)) {
+        const adminTools = ["inbox-btn", "gc-btn", "admin-photo", "emer-btn"];
+        adminTools.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
+        });
+    }
+
+    // 5. NERD MODE: Special access for bartelsfamily5
+    if (u === "bartelsfamily5") {
+        const nerdBtn = document.getElementById('nerd-btn');
+        if (nerdBtn) nerdBtn.classList.remove('hidden');
+    }
+
+    // 6. INITIALIZE CONTENT
+    loadMessages(); 
+    loadGCList();
+}
 
         function prepImg(i) { const r = new FileReader(); r.onload = (e) => imgData = e.target.result; r.readAsDataURL(i.files[0]); }
 
@@ -228,19 +264,37 @@
 
         function openRules() { showModal(`<h3>Rules</h3><ol style="text-align:left; font-size:12px; line-height:1.6;"><li>No swearing or hate speech of any kind</li><li>Nothing against school policy</li><li>No spamming</li><li>All animals are equal but some are more equal than others</li></ol>`); }
         
-        function openMembers() {
-            db.ref("users").once("value", s => {
-                let l = "<h3>Player List</h3>";
-                s.forEach(u => {
-                    l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px;"><b>${u.key}</b>
-                        ${admins.includes(currentUser) && u.key !== currentUser ? `
-                        <div style="margin-top:5px;"><button onclick="warn('${u.key}')" style="background:orange; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Warn</button>
-                        <button onclick="ban('${u.key}')" style="background:red; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Ban</button>
-                        <button onclick="delAcc('${u.key}')" style="background:black; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Delete</button></div>` : ''}</div>`;
-                });
-                showModal(l);
-            });
-        }
+function openMembers() {
+    db.ref("users").once("value", s => {
+        let l = "<h3>Player List</h3>";
+        s.forEach(u => {
+            const isBanned = u.val().banned === true; // Check status
+            
+            l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px;">
+                <b>${u.key}</b> ${isBanned ? '<span style="color:red">(Banned)</span>' : ''}
+                ${admins.includes(currentUser) && u.key !== currentUser ? `
+                <div style="margin-top:5px;">
+                    <button onclick="warn('${u.key}')" style="background:orange; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Warn</button>
+                    
+                    ${isBanned ? 
+                        `<button onclick="unban('${u.key}')" style="background:green; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Unban</button>` : 
+                        `<button onclick="ban('${u.key}')" style="background:red; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Ban</button>`
+                    }
+                    
+                    <button onclick="delAcc('${u.key}')" style="background:black; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Delete</button>
+                </div>` : ''}
+            </div>`;
+        });
+        showModal(l);
+    });
+}
+
+// Add this function below openMembers
+function unban(u) {
+    db.ref("users/" + u).update({ banned: false });
+    alert(u + " has been unbanned.");
+    openMembers(); // This refreshes the modal so the button swaps back
+}
 
         function warn(u) { db.ref("users/"+u).update({warned: true}); alert("Warned " + u); }
         function ban(u) { if(confirm("Ban user?")) db.ref("users/"+u).update({banned: true}); }
@@ -256,7 +310,38 @@
         function deleteGC() { if(confirm("Delete GC?")) { db.ref("gc_meta/"+currentGCKey).remove(); db.ref("gcs/"+currentGCKey).remove(); switchRoom("messages"); closeModals(); } }
         function loadGCList() { db.ref("gc_meta").on("value", s => { const sel = document.getElementById('room-select'); sel.innerHTML = `<option value="messages">Public</option>`; s.forEach(g => { if(g.val().members && g.val().members.includes(currentUser)) sel.innerHTML += `<option value="gcs/${g.key}">${g.val().name}</option>`; }); if(currentGCKey) sel.value = "gcs/"+currentGCKey; }); }
         
-        function openNerd() { showModal(`<h3>Nerd Mode</h3><button onclick="db.ref('messages').remove()" style="background:red;">Wipe Public</button><button onclick="db.ref('gc_meta').remove();db.ref('gcs').remove()" style="background:red;margin-top:5px;">Wipe GCs</button>`); }
+        async function openNerd() {
+    // 1. Get all users from the database
+    const snap = await db.ref("users").once("value");
+    let onlineCount = 0;
+    const now = Date.now();
+    
+    snap.forEach(u => {
+        // 2. Check if user was active in the last 5 minutes (300,000 ms)
+        if (u.val().lastSeen && (now - u.val().lastSeen < 300000)) {
+            onlineCount++;
+        }
+    });
+
+    showModal(`
+        <h3>Nerd Mode 🤓</h3>
+        <div style="background:#0f0f1a; padding:12px; border-radius:8px; margin-bottom:15px; font-size:12px; border:1px solid var(--primary); text-align: left;">
+            <p style="margin: 5px 0;"><b>📡 Server:</b> <span style="color:#2ed573;">Operational</span></p>
+            <p style="margin: 5px 0;"><b>👥 Active Players:</b> <span style="color:var(--primary); font-weight:bold;">${onlineCount}</span></p>
+            <p style="margin: 5px 0; font-size: 9px; color: #666;">(Active within last 5 mins)</p>
+        </div>
+        
+        <button onclick="if(confirm('Wipe ALL public messages?')) db.ref('messages').remove()" 
+            style="background:var(--danger); width:100%; margin-bottom:8px; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer;">
+            Wipe Public Chat
+        </button>
+        
+        <button onclick="if(confirm('Wipe ALL Group Chats?')) { db.ref('gc_meta').remove(); db.ref('gcs').remove(); }" 
+            style="background:var(--danger); width:100%; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer;">
+            Wipe All GCs
+        </button>
+    `);
+}
         function openInbox() { db.ref("reports").on("value", snap => { let l = "<h3>Reports</h3>"; snap.forEach(c => { l += `<div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:8px;">${c.val().reason} <br> ${c.val().reportedUser !== 'SYSTEM' ? `<button onclick="warn('${c.val().reportedUser}')" style="font-size:8px;">Warn</button>` : ''} <button onclick="db.ref('reports/${c.key}').remove()" style="font-size:8px; background:grey;">Clear</button></div>`; }); showModal(l); }); }
     </script>
 </body>
