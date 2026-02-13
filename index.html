@@ -311,13 +311,13 @@ function openMembers() {
         let l = "<h3>Player List</h3>";
         
         // BlockBoy's Official Profile (Hardcoded at the top)
-        l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
-                <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
-                <div>
-                    <b>BlockBoy 🧱</b> <span style="font-size:9px; color:#f1c40f;">(Official AI)</span><br>
-                    <span style="font-size:10px; color:#888;">"Use ClareCool!" | 📖 Reading: Mr. Fart</span>
-                </div>
-            </div>`;
+l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
+        <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
+        <div>
+            <b>BlockBoy 🧱</b><br>
+            <span style="font-size:10px; color:#888;">"Use ClareCool!"
+        </div>
+    </div>`;
 
         // 2. NOW LOOP THROUGH THE ACTUAL USERS
         s.forEach(u => {
@@ -520,12 +520,12 @@ window.addEventListener('load', async () => {
 function summonBlockBoy() {
     const randomPhrase = bbPhrases[Math.floor(Math.random() * bbPhrases.length)];
     
-    // Sends as a system message to the current room
-    db.ref(room).push({
-        username: "BlockBoy (AI) 🧱",
+    // Changing 'room' to '"messages"' ensures he always hits the public chat
+    db.ref("messages").push({
+        username: "BlockBoy",
         text: randomPhrase,
-        pfp: "https://via.placeholder.com/30/f1c40f/ffffff?text=BB", // You can change this to a real BB icon
-        status: "Official AI",
+        pfp: "blockboy.png",
+        status: "Use ClareCool!",
         time: Date.now()
     });
 }
