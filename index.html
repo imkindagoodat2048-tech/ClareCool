@@ -125,7 +125,6 @@
             const p = document.getElementById('password-in').value.trim();
             if(!u || !p) return;
 
-            // if
     const illegalChars = /[ \(\)\[\]\{\}\<\>\/\\|]/;
     if (illegalChars.test(u)) {
         alert("You have unsupported characters. No spaces or brackets allowed, bud. 🍁");
@@ -311,13 +310,13 @@ function openMembers() {
         let l = "<h3>Player List</h3>";
         
         // BlockBoy's Official Profile (Hardcoded at the top)
-l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
-        <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
-        <div>
-            <b>BlockBoy 🧱</b><br>
-            <span style="font-size:10px; color:#888;">"Use ClareCool!"
-        </div>
-    </div>`;
+        l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
+            <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
+            <div>
+                <b>BlockBoy 🧱</b><br>
+                <span style="font-size:10px; color:#888;">"Use ClareCool!"</span>
+            </div>
+        </div>`;
 
         // 2. NOW LOOP THROUGH THE ACTUAL USERS
         s.forEach(u => {
