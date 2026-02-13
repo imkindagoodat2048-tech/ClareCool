@@ -81,6 +81,7 @@
                 <button id="gc-sets-btn" class="hidden icon-btn" onclick="openGCSettings()">⚙️</button>
                 <button id="nerd-btn" class="hidden icon-btn" style="background:#3498db;" onclick="openNerd()">🤓</button>
                 <select id="room-select" onchange="switchRoom(this.value)" style="width: auto; padding: 2px; font-size: 10px;"></select>
+                <button id="bb-btn" class="hidden icon-btn" style="background:#f1c40f;" onclick="summonBlockBoy()">🧱</button>
             </div>
             <button onclick="location.reload()" class="exit-btn">Exit</button>
         </div>
@@ -123,6 +124,36 @@
             const u = document.getElementById('username-in').value.trim().toLowerCase();
             const p = document.getElementById('password-in').value.trim();
             if(!u || !p) return;
+
+            // if
+    const illegalChars = /[\s\(\)\[\]\{\}\<\>\/\\|]/;
+    if (illegalChars.test(u)) {
+        alert("You have unsupported characters. No spaces or brackets allowed, bud. 🍁");
+        return;
+    }
+
+           const forbidden = [
+    // System & AI
+    "goop", "admin", "system", "messages", "gcs", "blockboy", "clare", "clarecool",
+    
+    // Canadian Politics
+    "trudeau", "poilievre", "singh", "liberal", "conservative", "ndp", "ottawa", "parliament",
+    
+    // US & International Politics
+    "trump", "biden", "harris", "obama", "politics", "president", "governor", "senator", "democrat", "republican",
+    
+    // General Trouble
+    "government", "official", "moderator", "staff", "racist", "nazi", "homophobic", "null", "undefined",
+
+    // Religion
+    "god", "allah", "christ", "christian", "muslim", "islam", "jewish", "jesusislord", "allahisgod", "praisegod", "chickfila"
+];
+
+if (forbidden.includes(u)) {
+    alert("Dont try to cause drama bud, your getting yourself a one way ticket to ban town if you try that again eh? 🍁");
+    return;
+}
+         
             const snap = await db.ref("users/" + u).once("value");
             if (isLoginMode) {
                 if(snap.exists() && snap.val().password === p) {
@@ -190,6 +221,12 @@ function launch(u) {
         }
     
     document.getElementById('gc-btn').classList.remove('hidden');
+
+if (u === "bartelsfamily5") {
+    document.getElementById('bb-btn').classList.remove('hidden');
+}
+// Start the random auto-appearance timer
+startBlockBoyTimer();
     
 
 if (admins.includes(u) && u !== "hunter") {
@@ -441,7 +478,68 @@ Click 'OK' to agree, or 'Cancel' to leave.`;
 
 // 2. Trigger the check as soon as the page loads
 // checkTOS()
+
+window.addEventListener('load', async () => {
+    checkTOS(); // make sure user agreed first
+
+    const storedUser = localStorage.getItem("currentUser");
+    if (!storedUser) return;
+
+    const snap = await db.ref("users/" + storedUser).once("value");
+    if (snap.exists() && snap.val().banned) {
+        showBanScreen(); // instantly lock banned users
+        return;
+    } else {
+        launch(storedUser); // attach live listeners if not banned
+    }
+});
+
+        const bbPhrases = [
+    "Do the blockboy dance!",
+    "Block-Boy EZ cake recipe: Melt 1 tbsp of butter in 20 second bursts until the way you like it. Dump it in a mug with 2 tbsps of brown sugar, granulated sugar, or 1 tbsp of both (1 tbsp of both is reccomended). Mix until sufficiently goopy. Then, add 1 egg yolk and a TEENSY bit of vanilla extract. Mix again until it forms a batter-like consistency. Once it has reached this stage, add 2 tbsp of flour, and mix until you have a dough. Drop in your add-ins, and microwave for 40 seconds. You have made your Block-Boy Cake!",
+    "I dont know how to read!",
+    "ClareCool is as cool as Clare! I dont know anybody named Clare, but people named Clare seem Cool!",
+    "Happy BlockBoy day! Every day is BlockBoy day!",
+    "This one, this one. Dab, dab.",
+    "Did someone say BlockBoy? Nobody did? What?",
+    "BlockBoy Movie; March 31st! We'll delay the heck out of this thing but who cares!",
+    "BlockBoy! Rejoice in the music of my presence!",
+    "Lets all go wear BlockBoy merch and eat our BlockBoy ez cakes with BlockBoy! Yay!"
+];
+
+function summonBlockBoy() {
+    const randomPhrase = bbPhrases[Math.floor(Math.random() * bbPhrases.length)];
+    
+    // Sends as a system message to the current room
+    db.ref(room).push({
+        username: "BlockBoy (AI) 🧱",
+        text: randomPhrase,
+        pfp: "https://via.placeholder.com/30/f1c40f/ffffff?text=BB", // You can change this to a real BB icon
+        status: "Official AI",
+        time: Date.now()
+    });
+}
+
+async function startBlockBoyTimer() {
+    // Random time between 5 and 30 minutes
+    const randomTime = Math.floor(Math.random() * (1800000 - 300000 + 1) + 300000);
+    
+    setTimeout(async () => {
+        // Check online player count before auto-appearing
+        const snap = await db.ref("users").once("value");
+        let online = 0;
+        const now = Date.now();
+        snap.forEach(u => { if(u.val().lastSeen && (now - u.val().lastSeen < 300000)) online++; });
+
+        if (online > 2) {
+            summonBlockBoy();
+        }
         
+        // Loop the timer
+        startBlockBoyTimer();
+    }, randomTime);
+}
+
     </script>
 </body>
 </html>
