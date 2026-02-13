@@ -307,21 +307,31 @@ if (admins.includes(u) && u !== "hunter") {
         
 function openMembers() {
     db.ref("users").once("value", s => {
+        // 1. START THE LIST WITH THE LEGEND HIMSELF
         let l = "<h3>Player List</h3>";
+        
+        // BlockBoy's Official Profile (Hardcoded at the top)
+        l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
+                <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
+                <div>
+                    <b>BlockBoy 🧱</b> <span style="font-size:9px; color:#f1c40f;">(Official AI)</span><br>
+                    <span style="font-size:10px; color:#888;">"Use ClareCool!" | 📖 Reading: Mr. Fart</span>
+                </div>
+            </div>`;
+
+        // 2. NOW LOOP THROUGH THE ACTUAL USERS
         s.forEach(u => {
-            const isBanned = u.val().banned === true; // Check status
+            const isBanned = u.val().banned === true;
             
             l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px;">
                 <b>${u.key}</b> ${isBanned ? '<span style="color:red">(Banned)</span>' : ''}
                 ${admins.includes(currentUser) && u.key !== currentUser ? `
                 <div style="margin-top:5px;">
                     <button onclick="warn('${u.key}')" style="background:orange; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Warn</button>
-                    
                     ${isBanned ? 
                         `<button onclick="unban('${u.key}')" style="background:green; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Unban</button>` : 
                         `<button onclick="ban('${u.key}')" style="background:red; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Ban</button>`
                     }
-                    
                     <button onclick="delAcc('${u.key}')" style="background:black; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Delete</button>
                 </div>` : ''}
             </div>`;
