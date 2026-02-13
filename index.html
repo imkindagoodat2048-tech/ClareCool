@@ -126,7 +126,7 @@
             if(!u || !p) return;
 
             // if
-    const illegalChars = /[\s\(\)\[\]\{\}\<\>\/\\|]/;
+    const illegalChars = /[ \(\)\[\]\{\}\<\>\/\\|]/;
     if (illegalChars.test(u)) {
         alert("You have unsupported characters. No spaces or brackets allowed, bud. 🍁");
         return;
@@ -134,23 +134,23 @@
 
            const forbidden = [
     // System & AI
-    "goop", "admin", "system", "messages", "gcs", "blockboy", "clare", "clarecool",
+    "goop", "admin", "system", "messages", "blockboy", "clare", "clarecool", "palmer", "carson", "brayden"
     
     // Canadian Politics
-    "trudeau", "poilievre", "singh", "liberal", "conservative", "ndp", "ottawa", "parliament",
+    "trudeau", "poilievre", "singh", "liberal", "conservative", "ndp", "parliament", "npd", "liberal", "newdem", "greenparty", "ppc", "peoplesparty"
     
     // US & International Politics
-    "trump", "biden", "harris", "obama", "politics", "president", "governor", "senator", "democrat", "republican",
+    "trump", "biden", "harris", "obama", "politics", "president", "governor", "senator", "democrat", "republican", "donaldtrump"
     
     // General Trouble
-    "government", "official", "moderator", "staff", "racist", "nazi", "homophobic", "null", "undefined",
+    "government", "official", "moderator", "staff", "racist", "nazi", "homophobic", "null", "undefined", "antifurry", "transphobic", "homophobia", "racism", "transphobia"
 
     // Religion
-    "god", "allah", "christ", "christian", "muslim", "islam", "jewish", "jesusislord", "allahisgod", "praisegod", "chickfila"
+    "god", "allah", "christ", "christian", "muslim", "islam", "jewish", "jesusislord", "allahisgod", "praisegod", "chickfila", "jew"
 ];
 
-if (forbidden.includes(u)) {
-    alert("Dont try to cause drama bud, your getting yourself a one way ticket to ban town if you try that again eh? 🍁");
+if  (forbidden.includes(u)) {
+    alert("Ooh seems you've got a restricted username, eh? Sorry bout that, choose a new one! Dont be controversial though! 🍁");
     return;
 }
          
