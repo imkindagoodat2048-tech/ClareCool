@@ -414,25 +414,28 @@ if (!admins.includes(currentUser) || currentUser === "hunter") {
         function openInbox() { db.ref("reports").on("value", snap => { let l = "<h3>Reports</h3>"; snap.forEach(c => { l += `<div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:8px;">${c.val().reason} <br> ${c.val().reportedUser !== 'SYSTEM' ? `<button onclick="warn('${c.val().reportedUser}')" style="font-size:8px;">Warn</button>` : ''} <button onclick="db.ref('reports/${c.key}').remove()" style="font-size:8px; background:grey;">Clear</button></div>`; }); showModal(l); }); }
         // 1. TOS Check Function
 function checkTOS() {
-    // Check if they have agreed before
     if (localStorage.getItem("tos_agreed")) return;
 
-    // The TOS Message
-    const msg = `By agreeing, you express that you understand these 4 terms:
+    const msg = `By pressing OK, you confirm that you understand these terms:
     
 1: Anything you post in Global Chat can and will be monitored by admins.
-2: Anything posted in Group Chats without admin supervision is unsupervised. If it breaks rules, report it.
-3: Use in class is your responsibility, not ours.
-4: You will read the first 3 rules before chatting.
+2: Anything posted in Group Chats without admins added is unsupervised. If it breaks rules, report it.
+3: Dont judge anyone for doing cringy stuff to make their friends laugh. Thats what we're all about.
+4: Use in class is your responsibility, not ours.
+5: You will read the first 3 rules before chatting.
 
 Click 'OK' to agree, or 'Cancel' to leave.`;
 
     if (confirm(msg)) {
-        // If they click OK, remember it
         localStorage.setItem("tos_agreed", "true");
     } else {
-        // If they click Cancel or X, send them to the video!
-        window.location.href = "https://www.youtube.com/watch?v=SxWR5VtTMbM";
+        // THIS KICKS THEM OUT
+        document.body.innerHTML = `
+            <div style="background:#000; color:red; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; font-family:sans-serif;">
+                <h1>ACCESS DENIED</h1>
+                <p>You must agree to the TOS to enter ClareCool.</p>
+                <button onclick="location.reload()" style="padding:10px; margin-top:20px; cursor:pointer;">Try Again</button>
+            </div>`;
     }
 }
 
