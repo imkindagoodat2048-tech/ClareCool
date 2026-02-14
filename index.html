@@ -475,13 +475,8 @@ Click 'OK' to agree, or 'Cancel' to leave.`;
     if (confirm(msg)) {
         localStorage.setItem("tos_agreed", "true");
     } else {
-        // THIS KICKS THEM OUT
-        document.body.innerHTML = `
-            <div style="background:#000; color:red; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; font-family:sans-serif;">
-                <h1>ACCESS DENIED</h1>
-                <p>You must agree to the TOS to enter ClareCool.</p>
-                <button onclick="location.reload()" style="padding:10px; margin-top:20px; cursor:pointer;">Try Again</button>
-            </div>`;
+        // Kicks them out.
+        window.location.replace("about:blank"); 
     }
 }
 
