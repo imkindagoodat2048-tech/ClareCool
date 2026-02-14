@@ -339,14 +339,12 @@ function openMembers() {
     db.ref("users").once("value", s => {
         let l = "<h3>Player List</h3>";
         
-        // Loop through every user
         s.forEach(u => {
             const userData = u.val();
             const isBanned = userData.banned === true;
             const pfp = userData.pfp || 'https://via.placeholder.com/30';
             const status = userData.status || "Active";
             
-            // This mirrors BlockBoy's style for EVERYONE
             l += `
             <div style="text-align:left; border-bottom:1px solid #333; padding:10px; display:flex; align-items:center; justify-content:space-between;">
                 <div style="display:flex; align-items:center; cursor:pointer;" onclick="viewProfile('${u.key}')">
@@ -359,12 +357,12 @@ function openMembers() {
 
                 ${admins.includes(currentUser) && u.key !== currentUser ? `
                 <div style="display:flex; gap:3px;">
-                    <button onclick="warn('${u.key}')" style="background:orange; font-size:8px; border:none; border-radius:4px; padding:4px;">W</button>
+                    <button onclick="event.stopPropagation(); warn('${u.key}')" style="background:orange; color:white; font-size:8px; border:none; border-radius:4px; padding:4px; cursor:pointer;">W</button>
                     ${isBanned ? 
-                        `<button onclick="unban('${u.key}')" style="background:green; font-size:8px; border:none; border-radius:4px; padding:4px;">U</button>` : 
-                        `<button onclick="ban('${u.key}')" style="background:red; font-size:8px; border:none; border-radius:4px; padding:4px;">B</button>`
+                        `<button onclick="event.stopPropagation(); unban('${u.key}')" style="background:green; color:white; font-size:8px; border:none; border-radius:4px; padding:4px; cursor:pointer;">U</button>` : 
+                        `<button onclick="event.stopPropagation(); ban('${u.key}')" style="background:red; color:white; font-size:8px; border:none; border-radius:4px; padding:4px; cursor:pointer;">B</button>`
                     }
-                    <button onclick="delAcc('${u.key}')" style="background:black; font-size:8px; border:none; border-radius:4px; padding:4px;">D</button>
+                    <button onclick="event.stopPropagation(); delAcc('${u.key}')" style="background:black; color:white; font-size:8px; border:none; border-radius:4px; padding:4px; cursor:pointer;">D</button>
                 </div>` : ''}
             </div>`;
         });
@@ -380,16 +378,28 @@ function unban(u) {
 }
 
         function warn(u) { db.ref("users/"+u).update({warned: true}); alert("Warned " + u); }
-        function ban(u) { if(confirm("Ban user?")) db.ref("users/"+u).update({banned: true}); }
-        function delAcc(u) { if(confirm("Delete account?")) db.ref("users/"+u).remove(); }
+        function ban(u) { 
+    if(confirm("Ban user?")) {
+        db.ref("users/" + u).update({ banned: true }).then(() => {
+            openMembers(); // Refreshes the list instantly
+        });
+    }
+}
+        function delAcc(u) { 
+    if(confirm("Delete account?")) {
+        db.ref("users/" + u).remove().then(() => {
+            openMembers(); // Removes the player from the list instantly
+        });
+    }
+}
         function emergency() { db.ref("reports").push({ reportedUser: "SYSTEM", reason: "🚨 EMERGENCY FROM " + currentUser }); alert("Admin alert broadcasted."); }
 
        // Update this function in your script
 function openReport(key, user) { 
-    // We grab the text of the message from the UI or database logic
-    // For simplicity, we'll pass it into the submit function
-    const msgElement = document.querySelector(`[onclick="openReport('${key}', '${user}')"]`).closest('.msg-bubble');
-    const msgText = msgElement ? msgElement.innerText.split('❤️')[0].trim() : "Image/No Text";
+    // This finds the message bubble safely
+    const btn = document.querySelector(`[onclick*="${key}"]`);
+    const msgElement = btn ? btn.closest('.msg-bubble') : null;
+    const msgText = msgElement ? msgElement.innerText.split('❤️')[0].trim() : "Image or system message";
 
     showModal(`
         <h3>Report User: ${user}</h3>
@@ -403,7 +413,6 @@ function openReport(key, user) {
         <button onclick="submitReport('${user}', '${msgText.replace(/'/g, "\\'")}')" style="margin-top:10px; width:100%;">Submit Report</button>
     `); 
 }
-
 // Update the submission function to save the message
 function submitReport(u, msg) { 
     db.ref("reports").push({ 
@@ -599,8 +608,7 @@ window.addEventListener('load', async () => {
         }
     }
 });
-    }
-});
+
 
         const bbPhrases = [
     "Do the blockboy dance!",
