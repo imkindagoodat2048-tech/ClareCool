@@ -252,18 +252,14 @@ if (admins.includes(u)) {
         const count = snap.numChildren();
         const badge = document.getElementById('report-badge');
         
-        if (count > 0) {
-            badge.innerText = count;
-            badge.classList.remove('hidden');
-            
-            // OPTIONAL: Make it shake if there's an emergency
-            let hasEmergency = false;
-            snap.forEach(c => { if(c.val().reportedUser === 'SYSTEM') hasEmergency = true; });
-            badge.style.background = hasEmergency ? "red" : "#eb4d4b";
-            if(hasEmergency) badge.style.animation = "rainbow 0.5s infinite"; // Using your existing rainbow anim
-            
-        } else {
-            badge.classList.add('hidden');
+        // This 'if (badge)' check prevents the site from freezing
+        if (badge) {
+            if (count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
     });
 }
@@ -527,7 +523,6 @@ if (!admins.includes(currentUser) || currentUser === "hunter") {
 }
 function openInbox() { 
     db.ref("reports").on("value", snap => { 
-        // 1. Add the "Clear All" button right at the top
         let l = "<h3>Reports 📥</h3>"; 
         
         if (snap.exists()) {
@@ -539,15 +534,24 @@ function openInbox() {
             l += "<p style='font-size:12px; color:#666;'>No active reports.</p>";
         }
 
-        // 2. Loop through individual reports as usual
         snap.forEach(c => { 
-            const r = c.val();
-            l += `<div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:8px;">
-                    <b>Target: ${r.reportedUser}</b><br>
-                    ${r.reason} <br> 
-                    ${r.reportedUser !== 'SYSTEM' ? `<button onclick="warn('${r.reportedUser}')" style="font-size:8px;">Warn</button>` : ''} 
-                    <button onclick="db.ref('reports/${c.key}').remove()" style="font-size:8px; background:grey;">Clear</button>
-                  </div>`; 
+            const r = c.val(); // This defines 'r' so the code below knows what it is
+            const target = r.reportedUser || "Unknown";
+            const reason = r.reason || "No reason";
+            const msg = r.message || "No message content";
+
+            l += `
+            <div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:10px;">
+                <b style="color:var(--danger);">Target: ${target}</b><br>
+                <i style="color:#aaa;">Reason: ${reason}</i><br>
+                <div style="background:#0f0f1a; padding:5px; margin:5px 0; border-radius:4px; border-left:2px solid var(--primary); color:#eee;">
+                    "${msg}"
+                </div>
+                <div style="margin-top:8px; display:flex; gap:5px;">
+                    ${target !== 'SYSTEM' ? `<button onclick="warn('${target}')" style="background:orange; border:none; border-radius:3px; font-size:9px; cursor:pointer; padding:2px 6px;">Warn</button>` : ''}
+                    <button onclick="db.ref('reports/${c.key}').remove()" style="background:#444; border:none; border-radius:3px; color:white; font-size:9px; cursor:pointer; padding:2px 6px;">Clear</button>
+                </div>
+            </div>`; 
         }); 
         showModal(l); 
     }); 
