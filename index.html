@@ -655,25 +655,33 @@ function summonBlockBoy() {
 }
 
 async function startBlockBoyTimer() {
-    // Random time between 5 and 30 minutes
+    // 1. Random time between 5 and 30 minutes
     const randomTime = Math.floor(Math.random() * (1800000 - 300000 + 1) + 300000);
     
     setTimeout(async () => {
-        // Check online player count before auto-appearing
         const snap = await db.ref("users").once("value");
-        let online = 0;
+        let activeUsers = [];
         const now = Date.now();
-        snap.forEach(u => { if(u.val().lastSeen && (now - u.val().lastSeen < 300000)) online++; });
 
-        if (online > 2) {
+        // 2. Identify all active users
+        snap.forEach(u => { 
+            if(u.val().lastSeen && (now - u.val().lastSeen < 300000)) {
+                activeUsers.push(u.key);
+            }
+        });
+
+        // 3. Alphabetical Leader Check: Only the first user in the list runs the summon
+        // This ensures BlockBoy only appears ONCE even if 20 people are online.
+        activeUsers.sort(); 
+        
+        if (activeUsers.length > 2 && activeUsers[0] === currentUser) {
             summonBlockBoy();
         }
         
-        // Loop the timer
+        // 4. Loop the timer for the next check
         startBlockBoyTimer();
     }, randomTime);
 }
-
     </script>
 </body>
 </html>
