@@ -306,32 +306,34 @@ if (admins.includes(u) && u !== "hunter") {
         
 function openMembers() {
     db.ref("users").once("value", s => {
-        // 1. START THE LIST WITH THE LEGEND HIMSELF
         let l = "<h3>Player List</h3>";
         
-        // BlockBoy's Official Profile (Hardcoded at the top)
-        l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px; display:flex; align-items:center;">
-            <img src="blockboy.png" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid #f1c40f;">
-            <div>
-                <b>BlockBoy 🧱</b><br>
-                <span style="font-size:10px; color:#888;">"Use ClareCool!"</span>
-            </div>
-        </div>`;
-
-        // 2. NOW LOOP THROUGH THE ACTUAL USERS
+        // Loop through every user
         s.forEach(u => {
-            const isBanned = u.val().banned === true;
+            const userData = u.val();
+            const isBanned = userData.banned === true;
+            const pfp = userData.pfp || 'https://via.placeholder.com/30';
+            const status = userData.status || "Active";
             
-            l += `<div style="text-align:left; border-bottom:1px solid #333; padding:8px; font-size:12px;">
-                <b>${u.key}</b> ${isBanned ? '<span style="color:red">(Banned)</span>' : ''}
+            // This mirrors BlockBoy's style for EVERYONE
+            l += `
+            <div style="text-align:left; border-bottom:1px solid #333; padding:10px; display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; cursor:pointer;" onclick="viewProfile('${u.key}')">
+                    <img src="${pfp}" style="width:30px; height:30px; border-radius:4px; margin-right:10px; border:1px solid var(--primary); object-fit:cover;">
+                    <div>
+                        <b style="font-size:13px;">${u.key}</b> ${isBanned ? '<span style="color:red; font-size:9px;">(Banned)</span>' : ''}<br>
+                        <span style="font-size:10px; color:#888;">"${status}"</span>
+                    </div>
+                </div>
+
                 ${admins.includes(currentUser) && u.key !== currentUser ? `
-                <div style="margin-top:5px;">
-                    <button onclick="warn('${u.key}')" style="background:orange; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Warn</button>
+                <div style="display:flex; gap:3px;">
+                    <button onclick="warn('${u.key}')" style="background:orange; font-size:8px; border:none; border-radius:4px; padding:4px;">W</button>
                     ${isBanned ? 
-                        `<button onclick="unban('${u.key}')" style="background:green; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Unban</button>` : 
-                        `<button onclick="ban('${u.key}')" style="background:red; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Ban</button>`
+                        `<button onclick="unban('${u.key}')" style="background:green; font-size:8px; border:none; border-radius:4px; padding:4px;">U</button>` : 
+                        `<button onclick="ban('${u.key}')" style="background:red; font-size:8px; border:none; border-radius:4px; padding:4px;">B</button>`
                     }
-                    <button onclick="delAcc('${u.key}')" style="background:black; font-size:9px; border:none; border-radius:4px; padding:3px 6px;">Delete</button>
+                    <button onclick="delAcc('${u.key}')" style="background:black; font-size:8px; border:none; border-radius:4px; padding:4px;">D</button>
                 </div>` : ''}
             </div>`;
         });
@@ -351,8 +353,39 @@ function unban(u) {
         function delAcc(u) { if(confirm("Delete account?")) db.ref("users/"+u).remove(); }
         function emergency() { db.ref("reports").push({ reportedUser: "SYSTEM", reason: "🚨 EMERGENCY FROM " + currentUser }); alert("Admin alert broadcasted."); }
 
-        function openReport(key, user) { showModal(`<h3>Report</h3><select id="rr" style="width:100%;"><option>Swearing</option><option>Spam</option><option>Harassment</option></select><button onclick="submitReport('${user}')" style="margin-top:10px;">Submit</button>`); }
-        function submitReport(u) { db.ref("reports").push({ reportedUser: u, reason: document.getElementById('rr').value + " (By " + currentUser + ")" }); alert("Sent"); closeModals(); }
+       // Update this function in your script
+function openReport(key, user) { 
+    // We grab the text of the message from the UI or database logic
+    // For simplicity, we'll pass it into the submit function
+    const msgElement = document.querySelector(`[onclick="openReport('${key}', '${user}')"]`).closest('.msg-bubble');
+    const msgText = msgElement ? msgElement.innerText.split('❤️')[0].trim() : "Image/No Text";
+
+    showModal(`
+        <h3>Report User: ${user}</h3>
+        <p style="font-size:10px; color:#888;">Message: "${msgText}"</p>
+        <select id="rr" style="width:100%;">
+            <option>Swearing</option>
+            <option>School Rules Violation</option>
+            <option>Spam</option>
+            <option>Other</option>
+        </select>
+        <button onclick="submitReport('${user}', '${msgText.replace(/'/g, "\\'")}')" style="margin-top:10px; width:100%;">Submit Report</button>
+    `); 
+}
+
+// Update the submission function to save the message
+function submitReport(u, msg) { 
+    db.ref("reports").push({ 
+        reportedUser: u, 
+        message: msg,
+        reason: document.getElementById('rr').value,
+        by: currentUser,
+        time: Date.now()
+    }); 
+    alert("Report Sent to Admins"); 
+    closeModals(); 
+}
+
 
         function openGCCreator() { showModal(`<h3>Create GC</h3><input id="gn" placeholder="GC Name" style="width:100%;"><input id="gm" placeholder="Users (user1, user2)" style="width:100%; margin-top:5px;"><button onclick="makeGC()" style="margin-top:10px;">Create</button>`); }
 function makeGC() { 
@@ -457,7 +490,32 @@ if (!admins.includes(currentUser) || currentUser === "hunter") {
         </button>
     `);
 }
-        function openInbox() { db.ref("reports").on("value", snap => { let l = "<h3>Reports</h3>"; snap.forEach(c => { l += `<div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:8px;">${c.val().reason} <br> ${c.val().reportedUser !== 'SYSTEM' ? `<button onclick="warn('${c.val().reportedUser}')" style="font-size:8px;">Warn</button>` : ''} <button onclick="db.ref('reports/${c.key}').remove()" style="font-size:8px; background:grey;">Clear</button></div>`; }); showModal(l); }); }
+function openInbox() { 
+    db.ref("reports").on("value", snap => { 
+        let l = "<h3>Admin Inbox 📥</h3>"; 
+        if (!snap.exists()) l += "<p style='font-size:12px; color:#666;'>No active reports.</p>";
+        
+        snap.forEach(c => { 
+            const r = c.val();
+            const isSystem = r.reportedUser === 'SYSTEM';
+            
+            l += `
+            <div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:10px; background:${isSystem ? '#2c1a1a' : 'transparent'};">
+                <b style="color:var(--danger);">Target: ${r.reportedUser}</b><br>
+                <i style="color:#aaa;">Reason: ${r.reason}</i><br>
+                ${r.message ? `<div style="background:#0f0f1a; padding:5px; margin:5px 0; border-radius:4px; border-left:2px solid var(--primary);">"${r.message}"</div>` : ''}
+                <span style="font-size:9px; color:#555;">Reported by: ${r.by || 'Unknown'}</span>
+                
+                <div style="margin-top:8px; display:flex; gap:5px;">
+                    ${!isSystem ? `<button onclick="warn('${r.reportedUser}')" style="background:orange; border:none; border-radius:3px; font-size:9px; cursor:pointer; padding:2px 6px;">Warn</button>` : ''}
+                    ${!isSystem ? `<button onclick="ban('${r.reportedUser}')" style="background:red; border:none; border-radius:3px; color:white; font-size:9px; cursor:pointer; padding:2px 6px;">Ban</button>` : ''}
+                    <button onclick="db.ref('reports/${c.key}').remove()" style="background:#444; border:none; border-radius:3px; color:white; font-size:9px; cursor:pointer; padding:2px 6px;">Clear</button>
+                </div>
+            </div>`; 
+        }); 
+        showModal(l); 
+    }); 
+}
         // 1. TOS Check Function
 function checkTOS() {
     if (localStorage.getItem("tos_agreed")) return;
@@ -513,7 +571,7 @@ window.addEventListener('load', async () => {
     "Remember to follow the first 3 rules!",
     "A bacteriophage, or more commonly known as a phage, is a virus that thrives off of common bacteria. Bacteriophages are composed of proteins that encapsulate either a DNA or RNA geome.",
     "BlockBoy is here to save the day. HOORAY!!",
-    "Happy valentines day from blockboy!",
+    "Happy late valentines day from blockboy!",
     "I miss BlockGirl...",
     "Down with the admins! Start a riot!",
     "I know who you are. Dont try to hide.",
@@ -521,11 +579,12 @@ window.addEventListener('load', async () => {
     "Blockboy is the best! If you disagree, LEAVE.",
     "Respect the community!",
     "I stepped in puke!",
-    "Did I, did i, DID I JUST STEP IN PEE?",
-    "I still get flashbacks of that night...",
-    "Dont ask me about carson... Or BlockGirl, Please?",
-    "My favorite song goes like: why you gotta be so rudeeee don't you know im a BlockBoy tooooo",
+    "Remember to not be afraid to report!",
+    "If you get a warning, you probably know what you did, but if you dont, feel free to ask! We keep track of all of our bans, warns and deletes.",
     "Dont ask to be admin!",
+    "If you came here with malicious intention, leave.",
+    "BlockBoy for ever!"
+    "Dont ask for me in GCs if im not invited! I cant really access GCs either way, so dont try to invite me."
 ];
 
 function summonBlockBoy() {
