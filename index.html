@@ -76,7 +76,21 @@
                 <button class="icon-btn" onclick="openRules()">📜</button>
                 <button class="icon-btn" onclick="openMembers()">👥</button>
                 <button id="emer-btn" class="hidden icon-btn" style="background:var(--danger);" onclick="emergency()">🚨</button>
-                <button id="inbox-btn" class="hidden icon-btn" style="background:#e67e22;" onclick="openInbox()">📥</button>
+                <button id="inbox-btn" class="hidden icon-btn" style="background:#e67e22; position: relative;" onclick="openInbox()">
+                    📥
+                    <span id="report-badge" class="hidden" style="
+                        position: absolute; 
+                        top: -5px; 
+                        right: -5px; 
+                        background: var(--danger); 
+                         color: white; 
+                        border-radius: 50%; 
+                        padding: 2px 5px; 
+                        font-size: 9px; 
+                        font-weight: bold; 
+                        border: 1px solid white;
+                    ">0</span>
+                </button>
                 <button id="gc-btn" class="hidden icon-btn" style="background:#2ed573;" onclick="openGCCreator()">➕</button>
                 <button id="gc-sets-btn" class="hidden icon-btn" onclick="openGCSettings()">⚙️</button>
                 <button id="nerd-btn" class="hidden icon-btn" style="background:#3498db;" onclick="openNerd()">🤓</button>
@@ -231,6 +245,27 @@ startBlockBoyTimer();
 if (admins.includes(u) && u !== "hunter") {
     const nerdBtn = document.getElementById('nerd-btn');
     if (nerdBtn) nerdBtn.classList.remove('hidden');
+}
+
+if (admins.includes(u)) {
+    db.ref("reports").on("value", snap => {
+        const count = snap.numChildren();
+        const badge = document.getElementById('report-badge');
+        
+        if (count > 0) {
+            badge.innerText = count;
+            badge.classList.remove('hidden');
+            
+            // OPTIONAL: Make it shake if there's an emergency
+            let hasEmergency = false;
+            snap.forEach(c => { if(c.val().reportedUser === 'SYSTEM') hasEmergency = true; });
+            badge.style.background = hasEmergency ? "red" : "#eb4d4b";
+            if(hasEmergency) badge.style.animation = "rainbow 0.5s infinite"; // Using your existing rainbow anim
+            
+        } else {
+            badge.classList.add('hidden');
+        }
+    });
 }
 
     // 6. INITIALIZE CONTENT
@@ -492,26 +527,27 @@ if (!admins.includes(currentUser) || currentUser === "hunter") {
 }
 function openInbox() { 
     db.ref("reports").on("value", snap => { 
-        let l = "<h3>Admin Inbox 📥</h3>"; 
-        if (!snap.exists()) l += "<p style='font-size:12px; color:#666;'>No active reports.</p>";
+        // 1. Add the "Clear All" button right at the top
+        let l = "<h3>Reports 📥</h3>"; 
         
+        if (snap.exists()) {
+            l += `<button onclick="if(confirm('Clear ALL reports?')) db.ref('reports').remove()" 
+                  style="width:100%; background:#444; color:white; border:none; border-radius:4px; padding:5px; margin-bottom:10px; cursor:pointer; font-size:10px;">
+                  Empty Inbox
+                  </button>`;
+        } else {
+            l += "<p style='font-size:12px; color:#666;'>No active reports.</p>";
+        }
+
+        // 2. Loop through individual reports as usual
         snap.forEach(c => { 
             const r = c.val();
-            const isSystem = r.reportedUser === 'SYSTEM';
-            
-            l += `
-            <div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:10px; background:${isSystem ? '#2c1a1a' : 'transparent'};">
-                <b style="color:var(--danger);">Target: ${r.reportedUser}</b><br>
-                <i style="color:#aaa;">Reason: ${r.reason}</i><br>
-                ${r.message ? `<div style="background:#0f0f1a; padding:5px; margin:5px 0; border-radius:4px; border-left:2px solid var(--primary);">"${r.message}"</div>` : ''}
-                <span style="font-size:9px; color:#555;">Reported by: ${r.by || 'Unknown'}</span>
-                
-                <div style="margin-top:8px; display:flex; gap:5px;">
-                    ${!isSystem ? `<button onclick="warn('${r.reportedUser}')" style="background:orange; border:none; border-radius:3px; font-size:9px; cursor:pointer; padding:2px 6px;">Warn</button>` : ''}
-                    ${!isSystem ? `<button onclick="ban('${r.reportedUser}')" style="background:red; border:none; border-radius:3px; color:white; font-size:9px; cursor:pointer; padding:2px 6px;">Ban</button>` : ''}
-                    <button onclick="db.ref('reports/${c.key}').remove()" style="background:#444; border:none; border-radius:3px; color:white; font-size:9px; cursor:pointer; padding:2px 6px;">Clear</button>
-                </div>
-            </div>`; 
+            l += `<div style="font-size:11px; text-align:left; border-bottom:1px solid #333; padding:8px;">
+                    <b>Target: ${r.reportedUser}</b><br>
+                    ${r.reason} <br> 
+                    ${r.reportedUser !== 'SYSTEM' ? `<button onclick="warn('${r.reportedUser}')" style="font-size:8px;">Warn</button>` : ''} 
+                    <button onclick="db.ref('reports/${c.key}').remove()" style="font-size:8px; background:grey;">Clear</button>
+                  </div>`; 
         }); 
         showModal(l); 
     }); 
