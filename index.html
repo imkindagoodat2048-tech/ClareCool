@@ -578,17 +578,23 @@ function checkTOS() {
 checkTOS();
 
 window.addEventListener('load', async () => {
-    checkTOS(); // make sure user agreed first
+    // 1. Run the TOS check first
+    checkTOS(); 
 
+    // 2. Check for an existing session
     const storedUser = localStorage.getItem("currentUser");
     if (!storedUser) return;
 
+    // 3. If they are logged in, check their status
     const snap = await db.ref("users/" + storedUser).once("value");
-    if (snap.exists() && snap.val().banned) {
-        showBanScreen(); // instantly lock banned users
-        return;
-    } else {
-        launch(storedUser); // attach live listeners if not banned
+    if (snap.exists()) {
+        if (snap.val().banned) {
+            showBanScreen(); 
+        } else {
+            launch(storedUser); 
+        }
+    }
+});
     }
 });
 
@@ -619,8 +625,8 @@ window.addEventListener('load', async () => {
     "If you get a warning, you probably know what you did, but if you dont, feel free to ask! We keep track of all of our bans, warns and deletes.",
     "Dont ask to be admin!",
     "If you came here with malicious intention, leave.",
-    "BlockBoy for ever!"
-    "Dont ask for me in GCs if im not invited! I cant really access GCs either way, so dont try to invite me."
+    "BlockBoy for ever!",
+    "Dont ask for me in GCs if im not invited! I cant really access GCs either way, so dont try to invite me.",
 ];
 
 function summonBlockBoy() {
