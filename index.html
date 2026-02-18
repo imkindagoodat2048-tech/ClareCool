@@ -113,11 +113,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // 1. GLOBAL VARIABLES
-    let currentUser = "";       // Stores the username
-    let room = "messages";      // Default room
-    let imgData = null;         // Stores uploaded image
-    let isLoginMode = true;     // Toggles Login/Signup UI
         const config = {
             apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
             authDomain: "mychat-28205.firebaseapp.com",
@@ -299,32 +294,32 @@ db.ref("admin_emergency").on("value", (snap) => {
 
         function prepImg(i) { const r = new FileReader(); r.onload = (e) => imgData = e.target.result; r.readAsDataURL(i.files[0]); }
 
-        async function sendMessage() {
-            const input = document.getElementById('msg-input');
-            let text = input.value.trim();
-            if(!text && !imgData) return;
-            
-            // SECRETS
-if (text.toLowerCase().includes("rule 4")) {
-    text = text.replace(/rule 4/gi, "Napoleon");
-}
+async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    let text = input.value.trim();
+    if(!text && !imgData) return;
 
-if (text.toLowerCase().includes("blockgirl")) {
-    text = text.replace(/blockgirl/gi, "Something");
-    setTimeout(() => {
-        location.reload();
-    }, 1000);
-    alert("Who are you talking about? I dont know anyone with that name..");
-    
-}
-
-// 3. The BlockBoy Summon (Only in General Chat)
-if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
-    if (room === "messages") {
-        const randomDelay = Math.floor(Math.random() * 3000) + 1000;
-        setTimeout(summonBlockBoy, randomDelay); 
+    // SECRETS
+    if (text.toLowerCase().includes("rule 4")) {
+        text = text.replace(/rule 4/gi, "Napoleon");
     }
-}
+
+    if (text.toLowerCase().includes("blockgirl")) {
+        text = text.replace(/blockgirl/gi, "Something");
+        setTimeout(() => { location.reload(); }, 1000);
+        alert("Who are you talking about? I dont know anyone with that name..");
+    }
+
+    if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
+        if (room === "messages") {
+            const randomDelay = Math.floor(Math.random() * 3000) + 1000;
+            setTimeout(summonBlockBoy, randomDelay);
+        }
+    }
+
+    const uSnap = await db.ref("users/" + currentUser).once("value");
+    db.ref(room).push({ username: currentUser, text: text, img: imgData, pfp: uSnap.val().pfp || "", status: uSnap.val().status || "", time: Date.now() });
+    input.value = ""; imgData = null;
 }
             
             const uSnap = await db.ref("users/" + currentUser).once("value");
