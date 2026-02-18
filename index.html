@@ -113,6 +113,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
+        // 1. GLOBAL VARIABLES
+    let currentUser = "";       // Stores the username
+    let room = "messages";      // Default room
+    let imgData = null;         // Stores uploaded image
+    let isLoginMode = true;     // Toggles Login/Signup UI
         const config = {
             apiKey: "AIzaSyB9Rlvq49-AiLBzMDvjz71QCTT4d6NqE98",
             authDomain: "mychat-28205.firebaseapp.com",
@@ -176,6 +181,7 @@ if  (forbidden.includes(u)) {
             } else {
                 if(snap.exists()) return alert("Username Taken");
                 await db.ref("users/" + u).set({ password: p, pfp: "", status: "Active", warned: false, banned: false });
+                
                 launch(u);
             }
         }
@@ -264,6 +270,28 @@ if (admins.includes(u)) {
     });
 }
 
+    // Add this inside the admin check in launch()
+db.ref("admin_emergency").on("value", (snap) => {
+    const data = snap.val();
+    if (!data) return;
+
+    // Only trigger if the alert happened in the last 15 seconds
+    if (Date.now() - data.timestamp < 15000) {
+        
+        // 1. Play the emergency sound
+        const alarm = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+        alarm.play().catch(e => console.log("Sound blocked: Admin needs to click the page first."));
+
+        // 2. Show the pop-up
+        showModal(`
+            <h2 style="color:var(--danger); animation: rainbow 0.5s infinite;">🚨 EMERGENCY 🚨</h2>
+            <p><b>FROM:</b> ${data.sender}</p>
+            <hr style="border-color:#333">
+            <p style="font-size:16px;">"${data.msg}"</p>
+        `);
+    }
+});
+
     // 6. INITIALIZE CONTENT
     loadMessages(); 
     loadGCList();
@@ -342,8 +370,20 @@ function loadMessages() {
         }
 
         function del(id) { if(confirm("Delete message?")) db.ref(`${room}/${id}`).remove(); }
-        function switchRoom(r) { room = r; currentGCKey = r.startsWith("gcs/") ? r.split('/')[1] : null; document.getElementById('gc-sets-btn').className = currentGCKey ? "icon-btn" : "icon-btn hidden"; loadMessages(); }
+function switchRoom(r) { 
+    // 1. Tell Firebase to stop listening to the OLD room
+    db.ref(room).off(); 
 
+    // 2. Switch the room name
+    room = r; 
+    currentGCKey = r.startsWith("gcs/") ? r.split('/')[1] : null; 
+    
+    // 3. Update UI buttons
+    document.getElementById('gc-sets-btn').className = currentGCKey ? "icon-btn" : "icon-btn hidden"; 
+    
+    // 4. Start the NEW listener
+    loadMessages(); 
+}
         function showModal(html) { document.getElementById('modal-content').innerHTML = html + `<button onclick="closeModals()" style="background:var(--primary); width:100%; margin-top:15px; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer;">Close</button>`; document.getElementById('master-modal').classList.remove('hidden'); }
         function closeModals() { document.getElementById('master-modal').classList.add('hidden'); }
 
@@ -416,7 +456,17 @@ function unban(u) {
         });
     }
 }
-        function emergency() { db.ref("reports").push({ reportedUser: "SYSTEM", reason: "🚨 EMERGENCY FROM " + currentUser }); alert("Admin alert broadcasted."); }
+async function emergency() {
+    const reason = prompt("🚨 EMERGENCY MEETING: What is the situation?");
+    if (!reason) return; // Stop if they hit cancel
+
+    // This updates a specific 'alert' node in the database
+    await db.ref("admin_emergency").set({
+        sender: currentUser,
+        msg: reason.toUpperCase(),
+        timestamp: Date.now()
+    });
+}
 
        // Update this function in your script
 function openReport(key, user) { 
@@ -614,25 +664,6 @@ function checkTOS() {
 // 4. Run the function immediately
 checkTOS();
 
-window.addEventListener('load', async () => {
-    // 1. Run the TOS check first
-    checkTOS(); 
-
-    // 2. Check for an existing session
-    const storedUser = localStorage.getItem("currentUser");
-    if (!storedUser) return;
-
-    // 3. If they are logged in, check their status
-    const snap = await db.ref("users/" + storedUser).once("value");
-    if (snap.exists()) {
-        if (snap.val().banned) {
-            showBanScreen(); 
-        } else {
-            launch(storedUser); 
-        }
-    }
-});
-
 
         const bbPhrases = [
     "Do the blockboy dance!",
@@ -700,9 +731,9 @@ async function startBlockBoyTimer() {
         // This ensures BlockBoy only appears ONCE even if 20 people are online.
         activeUsers.sort(); 
         
-        if (activeUsers.length > 2 && activeUsers[0] === currentUser) {
-            summonBlockBoy();
-        }
+if (activeUsers.length > 1 && activeUsers[0] === currentUser) {
+    summonBlockBoy();
+}
         
         // 4. Loop the timer for the next check
         startBlockBoyTimer();
