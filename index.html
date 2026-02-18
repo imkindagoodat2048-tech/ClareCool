@@ -102,6 +102,7 @@
         <div id="messages"></div>
         <div id="input-area">
             <div id="admin-photo" class="hidden"><label for="img-in" style="cursor:pointer; font-size:18px;">🖼️</label><input type="file" id="img-in" accept="image/*" style="display:none;" onchange="prepImg(this)"></div>
+             <button id="emoji-btn" class="hidden icon-btn" onclick="openEmojiPicker()">😀</button>
             <input type="text" id="msg-input" placeholder="Aa" onkeypress="if(event.key==='Enter') sendMessage()" style="flex:1;">
             <button onclick="sendMessage()" style="width: 60px; background: var(--primary); border:none; border-radius:6px; color:white; font-weight:bold; cursor:pointer;">Send</button>
         </div>
@@ -321,11 +322,6 @@ async function sendMessage() {
     db.ref(room).push({ username: currentUser, text: text, img: imgData, pfp: uSnap.val().pfp || "", status: uSnap.val().status || "", time: Date.now() });
     input.value = ""; imgData = null;
 }
-            
-            const uSnap = await db.ref("users/" + currentUser).once("value");
-            db.ref(room).push({ username: currentUser, text: text, img: imgData, pfp: uSnap.val().pfp || "", status: uSnap.val().status || "", time: Date.now() });
-            input.value = ""; imgData = null;
-        }
 
 function loadMessages() {
     db.ref(room).on("value", snap => {
@@ -706,6 +702,32 @@ function summonBlockBoy() {
     });
 }
 
+        function openEmojiPicker() {
+    const emojis = [
+        "emojis/1.png", "emojis/2.png" // fill in your files
+    ];
+
+                if (emojis.length === 0) {
+        showModal(`<h3>Coming Soon!</h3><p style="color:#888; font-size:12px;">Emojis are being made. Check back later!</p>`);
+        return;
+    }
+
+    let grid = `<h3>Emojis</h3><div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; max-height:300px; overflow-y:auto; padding:5px;">`;
+
+    emojis.forEach(path => {
+        grid += `<img src="${path}" onclick="insertEmoji('${path}')" style="width:40px; height:40px; cursor:pointer; border-radius:6px; border:1px solid #333; padding:2px; background:#0f0f1a; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">`;
+    });
+
+    grid += `</div>`;
+    showModal(grid);
+}
+
+function insertEmoji(path) {
+    const input = document.getElementById('msg-input');
+    input.value += ` [emoji:${path}] `;
+    input.focus();
+    closeModals();
+}
 async function startBlockBoyTimer() {
     // 1. Random time between 5 and 30 minutes
     const randomTime = Math.floor(Math.random() * (1800000 - 300000 + 1) + 300000);
