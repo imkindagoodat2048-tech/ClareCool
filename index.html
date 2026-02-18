@@ -147,7 +147,7 @@
 
            const forbidden = [
     // System & AI
-    "goop", "admin", "system", "messages", "blockboy", "clare", "clarecool", "palmer", "carson", "brayden", "wolfgang",
+    "goop", "admin", "system", "messages", "blockboy", "clarecool", "palmer", "carson", "brayden", "wolfgang", "blockgirl",
     
     // Canadian Politics
     "trudeau", "poilievre", "singh", "liberal", "conservative", "ndp", "parliament", "npd", "liberal", "newdem", "greenparty", "ppc", "peoplesparty",
@@ -159,7 +159,7 @@
     "government", "official", "moderator", "staff", "racist", "nazi", "homophobic", "null", "undefined", "antifurry", "transphobic", "homophobia", "racism", "transphobia",
 
     // Religion
-    "god", "allah", "christ", "christian", "muslim", "islam", "jewish", "jesusislord", "allahisgod", "praisegod", "chickfila", "jew"
+    "god", "allah", "christ", "christian", "muslim", "islam", "jewish", "jesusislord", "allahisgod", "praisegod", "chickfila", "jew", "judaism"
 ];
 
 if  (forbidden.includes(u)) {
@@ -283,12 +283,11 @@ if (text.toLowerCase().includes("rule 4")) {
 
 if (text.toLowerCase().includes("blockgirl")) {
     text = text.replace(/blockgirl/gi, "Something");
-    alert("I dont recall anyone with that name..");
     setTimeout(() => {
         location.reload();
-    }, 2000);
-
-    return;
+    }, 1000);
+    alert("Who are you talking about? I dont know anyone with that name..");
+    
 }
 
 if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
@@ -638,7 +637,7 @@ window.addEventListener('load', async () => {
     "ClareCool is as cool as Clare! I dont know anybody named Clare, but people named Clare seem Cool!",
     "Happy BlockBoy day! Every day is BlockBoy day!",
     "This one, this one. Dab, dab.",
-    "Did someone say BlockBoy? Nobody did? What?",
+    "Did someone say BlockBoy?",
     "BlockBoy Movie; March 31st! We'll delay the heck out of this thing but who cares!",
     "BlockBoy! Rejoice in the music of my presence!",
     "Lets all go wear BlockBoy merch and eat our BlockBoy ez cakes with BlockBoy! Yay!",
@@ -660,6 +659,8 @@ window.addEventListener('load', async () => {
     "If you came here with malicious intention, leave.",
     "BlockBoy for ever!",
     "Dont ask for me in GCs if im not invited! I cant really access GCs either way, so dont try to invite me.",
+    "Put food coloring in your blockboy EZ cake if you want HARDCORE BLOCKBOY EZ CAKE. Make sure to be careful with the amount, and only do it under parental supervision.",
+    "If you call for me in a GC, dont be surprised when I dont answer."
 ];
 
 function summonBlockBoy() {
