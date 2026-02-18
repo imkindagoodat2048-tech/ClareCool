@@ -278,11 +278,17 @@ if (admins.includes(u)) {
             
             // SECRETS
 if (text.toLowerCase().includes("rule 4")) {
-    text = text.replace(/rule 4/gi, "Animal Farm");
+    text = text.replace(/rule 4/gi, "Napoleon");
 }
 
 if (text.toLowerCase().includes("blockgirl")) {
-    text = text.replace(/blockgirl/gi, "Nobody");
+    text = text.replace(/blockgirl/gi, "Something");
+    alert("I dont recall anyone with that name..");
+    setTimeout(() => {
+        location.reload();
+    }, 2000);
+
+    return;
 }
 
 if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
@@ -640,8 +646,8 @@ window.addEventListener('load', async () => {
     "Remember to follow the first 3 rules!",
     "A bacteriophage, or more commonly known as a phage, is a virus that thrives off of common bacteria. Bacteriophages are composed of proteins that encapsulate either a DNA or RNA geome.",
     "BlockBoy is here to save the day. HOORAY!!",
-    "Happy late valentines day from blockboy!",
-    "I miss BlockGirl...",
+    "Happy EXTREMELY late valentines day from blockboy!",
+    "I used to have a best friend, but I cant recall anything about her.",
     "Down with the admins! Start a riot!",
     "I know who you are. Dont try to hide.",
     "I would react to this, but I'm emotionally unavailable right now.",
