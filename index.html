@@ -276,41 +276,56 @@ if (admins.includes(u)) {
             let text = input.value.trim();
             if(!text && !imgData) return;
             
-            // SECRET: Rule 4 logic
-            if(text.toLowerCase().includes("rule 4")) text = text.replace(/rule 4/gi, "Animal Farm");
+            // SECRETS
+if (text.toLowerCase().includes("rule 4")) {
+    text = text.replace(/rule 4/gi, "Animal Farm");
+}
+
+if (text.toLowerCase().includes("blockgirl")) {
+    text = text.replace(/blockgirl/gi, "Nobody");
+}
+
+if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
+    const randomDelay = Math.floor(Math.random() * 3000) + 1000;
+    setTimeout(summonBlockBoy, randomDelay); 
+}
             
             const uSnap = await db.ref("users/" + currentUser).once("value");
             db.ref(room).push({ username: currentUser, text: text, img: imgData, pfp: uSnap.val().pfp || "", status: uSnap.val().status || "", time: Date.now() });
             input.value = ""; imgData = null;
         }
 
-        function loadMessages() {
-            db.ref(room).on("value", snap => {
-                const box = document.getElementById('messages'); box.innerHTML = "";
-                snap.forEach(child => {
-                    const m = child.val();
-                    const isMe = m.username === currentUser;
-                    const lks = m.likes ? Object.keys(m.likes).length : 0;
-                    const div = document.createElement('div');
-                    div.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
-                    div.innerHTML = `
-                        <img src="${m.pfp || 'https://via.placeholder.com/30'}" class="pfp-circle" onclick="viewProfile('${m.username}')">
-                        <div>
-                            ${!isMe ? `<div class="username-label">${m.username}${admins.includes(m.username)?'<span class="admin-tag">[ADM]</span>':''}</div>` : ''}
-                            <div class="msg-bubble">${m.text || ''}
-                                ${m.img ? `<img src="${m.img}" style="max-width:100%; border-radius:10px; margin-top:8px; display:block;">` : ''}
-                                <div style="display:flex; gap:10px; margin-top:6px; opacity:0.6;">
-                                    <button onclick="toggleLike('${child.key}')" style="background:none; border:none; color:white; font-size:10px; cursor:pointer;">❤️ ${lks || ''}</button>
-                                    <button onclick="openReport('${child.key}', '${m.username}')" style="background:none; border:none; font-size:9px; cursor:pointer;">🚩</button>
-                                    ${isMe || admins.includes(currentUser) ? `<button onclick="del('${child.key}')" style="background:none; border:none; font-size:9px; color:#ff4757; cursor:pointer;">🗑️</button>` : ''}
-                                </div>
-                            </div>
-                        </div>`;
-                    box.appendChild(div);
-                });
-                box.scrollTop = box.scrollHeight;
-            });
-        }
+function loadMessages() {
+    db.ref(room).on("value", snap => {
+        const box = document.getElementById('messages'); box.innerHTML = "";
+        snap.forEach(child => {
+            const m = child.val();
+            const isMe = m.username === currentUser;
+            const lks = m.likes ? Object.keys(m.likes).length : 0;
+            
+            // This creates the readable time (e.g., "3:15 PM")
+            const timeStr = m.time ? new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
+            const div = document.createElement('div');
+            div.className = `message-row ${isMe ? 'row-self' : 'row-other'}`;
+            div.innerHTML = `
+                <img src="${m.pfp || 'https://via.placeholder.com/30'}" class="pfp-circle" onclick="viewProfile('${m.username}')">
+                <div>
+                    ${!isMe ? `<div class="username-label">${m.username}${admins.includes(m.username)?'<span class="admin-tag">[ADM]</span>':''}</div>` : ''}
+                    <div class="msg-bubble">${m.text || ''}
+                        ${m.img ? `<img src="${m.img}" style="max-width:100%; border-radius:10px; margin-top:8px; display:block;">` : ''}
+                        <div style="display:flex; align-items:center; gap:10px; margin-top:6px; opacity:0.5; font-size:9px;">
+                            <span>${timeStr}</span> <button onclick="toggleLike('${child.key}')" style="background:none; border:none; color:white; cursor:pointer;">❤️ ${lks || ''}</button>
+                            <button onclick="openReport('${child.key}', '${m.username}')" style="background:none; border:none; color:white; cursor:pointer;">🚩</button>
+                            ${isMe || admins.includes(currentUser) ? `<button onclick="del('${child.key}')" style="background:none; border:none; color:#ff4757; cursor:pointer;">🗑️</button>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
 
         function toggleLike(id) {
             const ref = db.ref(`${room}/${id}/likes/${currentUser}`);
