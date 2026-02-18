@@ -136,6 +136,7 @@
         }
 
         async function handleLogin() {
+            console.log("handleLogin fired")
             const u = document.getElementById('username-in').value.trim().toLowerCase();
             const p = document.getElementById('password-in').value.trim();
             if(!u || !p) return;
