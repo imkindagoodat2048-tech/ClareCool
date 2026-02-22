@@ -316,6 +316,9 @@ async function sendMessage() {
     openMandelbrot();
 }
 
+        if (text.toLowerCase().includes("herobrine")) {
+    summonHerobrine();
+}
     if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
         if (room === "messages") {
             const randomDelay = Math.floor(Math.random() * 3000) + 1000;
@@ -832,6 +835,25 @@ function openMandelbrot() {
     });
 
     draw();
+}
+    function summonHerobrine() {
+    const eye = document.createElement('div');
+    eye.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        gap: 40px;
+        z-index: 99999;
+        pointer-events: none;
+    `;
+    eye.innerHTML = `
+        <div style="width:40px; height:40px; background:white;"></div>
+        <div style="width:40px; height:40px; background:white;"></div>
+    `;
+    document.body.appendChild(eye);
+    setTimeout(() => eye.remove(), 500);
 }
         
     </script>
