@@ -312,6 +312,10 @@ async function sendMessage() {
         alert("Who are you talking about? I dont know anyone with that name..");
     }
 
+    if (text.toLowerCase().includes("mandelbrot")) {
+    openMandelbrot();
+}
+
     if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
         if (room === "messages") {
             const randomDelay = Math.floor(Math.random() * 3000) + 1000;
@@ -757,6 +761,58 @@ if (activeUsers.length > 1 && activeUsers[0] === currentUser) {
         startBlockBoyTimer();
     }, randomTime);
 }
+    function openMandelbrot() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 500;
+    canvas.height = 400;
+    canvas.style.cssText = 'width:100%; border-radius:8px; display:block; margin-bottom:10px;';
+
+    const closeBtn = `<button onclick="closeModals()" style="background:var(--primary); width:100%; border:none; border-radius:6px; color:white; padding:8px; cursor:pointer; margin-top:10px;">Close</button>`;
+
+    document.getElementById('modal-content').innerHTML = `
+        <h3 style="margin-bottom:10px;">🌀 Mandelbrot Set</h3>
+    `;
+    document.getElementById('modal-content').appendChild(canvas);
+    document.getElementById('modal-content').insertAdjacentHTML('beforeend', '<p style="font-size:9px; color:#666; margin:4px 0;">The boundary of chaos and order.</p>' + closeBtn);
+    document.getElementById('master-modal').classList.remove('hidden');
+
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const maxIter = 128;
+
+    function drawRow(py) {
+        for (let px = 0; px < W; px++) {
+            let x0 = (px / W) * 3.5 - 2.5;
+            let y0 = (py / H) * 2.0 - 1.0;
+            let x = 0, y = 0, iter = 0;
+            while (x*x + y*y <= 4 && iter < maxIter) {
+                let xt = x*x - y*y + x0;
+                y = 2*x*y + y0;
+                x = xt;
+                iter++;
+            }
+            if (iter === maxIter) {
+                ctx.fillStyle = '#000';
+            } else {
+                const t = iter / maxIter;
+                const r = Math.floor(9 * (1-t) * t * t * t * 255);
+                const g = Math.floor(15 * (1-t) * (1-t) * t * t * 255);
+                const b = Math.floor(8.5 * (1-t) * (1-t) * (1-t) * t * 255);
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+            }
+            ctx.fillRect(px, py, 1, 1);
+        }
+    }
+
+    // Draw row by row so the browser doesn't freeze
+    let py = 0;
+    function step() {
+        for (let i = 0; i < 8 && py < H; i++, py++) drawRow(py);
+        if (py < H) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+        
     </script>
 </body>
 </html>
