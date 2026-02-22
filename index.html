@@ -62,7 +62,7 @@
     </div>
 
     <div id="auth-container" style="align-self: center; background: var(--chat-bg); padding: 30px; border-radius: 15px; width: 280px; text-align: center; border: 1px solid var(--primary);">
-        <h2 id="auth-header" style="color: var(--primary); margin: 0 0 15px 0; font-size: 24px;">ClareCool V1.2</h2>
+        <h2 id="auth-header" style="color: var(--primary); margin: 0 0 15px 0; font-size: 24px;">ClareCool V1.2.5</h2>
         <input type="text" id="username-in" placeholder="Username" style="width:100%; box-sizing: border-box; margin-bottom: 10px;">
         <input type="password" id="password-in" placeholder="Password" style="width:100%; box-sizing: border-box;">
         <button onclick="handleLogin()" style="width:100%; padding:12px; background:var(--primary); border:none; border-radius:8px; color:white; font-weight:bold; margin-top:20px; cursor:pointer;">Login</button>
@@ -131,7 +131,7 @@
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
-            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.2" : "Sign Up";
+            document.getElementById('auth-header').innerText = isLoginMode ? "ClareCool V1.2.5" : "Sign Up";
             document.getElementById('toggle-auth-text').innerText = isLoginMode ? "Already have an account? Login" : "New here? Sign Up";
         }
 
