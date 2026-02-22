@@ -316,15 +316,37 @@ async function sendMessage() {
         if (text.toLowerCase().includes("/herobrine")) {
     summonHerobrine();
 }
+
+    if (text.toLowerCase().includes("/animals")) {
+        openAnimals();
+    }
+
+    if (text.toLowerCase().includes("/piano")) {
+    const piano = document.createElement('img');
+    piano.src = "https://www.pianoheritage.com/wp-content/uploads/2017/07/cropped-SiteIcon512PxSquare.png";
+    piano.style.cssText = `
+        position: fixed;
+        left: 50%;
+        top: -150px;
+        transform: translateX(-50%);
+        width: 120px;
+        z-index: 99999;
+        pointer-events: none;
+        transition: top 1s ease-in;
+    `;
+    document.body.appendChild(piano);
+    setTimeout(() => { piano.style.top = "40%"; }, 50);
+    setTimeout(() => { piano.remove(); }, 2000);
+    }
     // TEXT SECRETS
 if (text.toLowerCase().includes("/1337")) {
     text = leetspeak(text.replace(/\/1337\s*/i, "").trim());
 }
-if (text.toLowerCase().includes("/wavy")) {
-    text = wavy(text.replace(/\/wavy\s*/i, "").trim());
-}
 if (text.toLowerCase().includes("/bboy")) {
     text = bboy(text.replace(/\/bboy\s*/i, "").trim());
+}
+if (text.toLowerCase().includes("/bioluminescent")) {
+    text = `<span style="text-shadow: 0 0 8px #00ffaa, 0 0 20px #00ffaa, 0 0 40px #00ffaa;">${text.replace(/\/bioluminescent\s*/i, "").trim()}</span>`;
 }
 
     
@@ -861,19 +883,35 @@ function openMandelbrot() {
     document.body.appendChild(eye);
     setTimeout(() => eye.remove(), 500);
 }
+    function openAnimals() {
+    showModal(`
+        <h3>🌿 ClareCool Favourites!</h3>
+        <div style="display:flex; flex-direction:column; gap:12px; max-height:350px; overflow-y:auto;">
+            <div>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpyaI91NAUZExa4jid56b7iPFsyhtRA16opQ&s" style="width:100%; border-radius:8px;">
+                <p style="font-size:11px; color:#a29bfe; margin:4px 0;">Yeti Crab</p>
+            </div>
+            <div>
+                <img src="https://a-z-animals.com/media/2021/08/orchid-mantis.jpg" style="width:100%; border-radius:8px;">
+                <p style="font-size:11px; color:#a29bfe; margin:4px 0;">Orchid Mantis</p>
+            </div>
+            <div>
+                <img src="https://www.montereybayaquarium.org/globalassets/mba/images/stories/deep-sea/giant-isopod-ap093.jpg?format=jpeg&quality=60" style="width:100%; border-radius:8px;">
+                <p style="font-size:11px; color:#a29bfe; margin:4px 0;">Giant Isopod</p>
+            </div>
+            <div>
+                <img src="https://images.newscientist.com/wp-content/uploads/2001/12/dn1635-1_370.jpg" style="width:100%; border-radius:8px;">
+                <p style="font-size:11px; color:#a29bfe; margin:4px 0;">Minute Gecko</p>
+            </div>
+        </div>
+    `);
+}
     function leetspeak(text) {
     const map = {
         'a': '4', 'e': '3', 'i': '1', 'o': '0',
         't': '7', 's': '5', 'g': '9', 'b': '8'
     };
     return text.split('').map(c => map[c.toLowerCase()] || c).join('');
-}
-function wavy(text) {
-    return text.split('').map((char, i) => {
-        if (char === ' ') return char;
-        const marks = ['\u0300', '\u0301', '\u0302', '\u0303', '\u0304'];
-        return char + marks[i % marks.length];
-    }).join('');
 }
 function bboy(text) {
     const map = {
