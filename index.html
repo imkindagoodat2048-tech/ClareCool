@@ -326,7 +326,7 @@ async function sendMessage() {
     let count = 0;
     const now = Date.now();
     snap.forEach(u => { if (u.val().lastSeen && (now - u.val().lastSeen < 300000)) count++; });
-    showModal(`<h3>👀 Who's Here?</h3><p style="font-size:28px; font-weight:bold; color:var(--primary);">${count}</p><p style="color:#888; font-size:11px;">players active in the last 5 minutes</p>`);
+    showModal(`<h3>Who's Here?</h3><p style="font-size:28px; font-weight:bold; color:var(--primary);">${count}</p><p style="color:#888; font-size:11px;">players active in the last 5 minutes</p>`);
     input.value = "";
     return;
 }
@@ -350,7 +350,7 @@ async function sendMessage() {
     const sessionMins = Math.floor((Date.now() - sessionStart) / 60000);
 
     showModal(`
-        <h3>📊 Your Stats</h3>
+        <h3>stats</h3>
         <div style="text-align:left; font-size:12px; background:#0f0f1a; padding:12px; border-radius:8px; border:1px solid var(--primary); line-height:2;">
             <b> user:</b> ${currentUser}<br>
             <b> msg:</b> ${msgCount}<br>
@@ -365,7 +365,7 @@ async function sendMessage() {
 }
     if (text.toLowerCase().includes("/history")) {
     showModal(`
-        <h3>📜 ClareCool History</h3>
+        <h3>📜History Of Clarecool📜</h3>
         <div style="display:flex; flex-direction:column; gap:12px; max-height:350px; overflow-y:auto; text-align:left;">
             <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
                 <b style="color:var(--primary);">0.8 - The First</b>
@@ -458,10 +458,16 @@ if (text.toLowerCase().includes("/bioluminescent")) {
     text = `<span style="text-shadow: 0 0 8px #00ff50, 0 0 20px #00ff50, 0 0 40px #00ff50;">${text.replace(/\/bioluminescent\s*/i, "").trim()}</span>`;
 }
  if (text.toLowerCase().includes("/shrug")) {
-     text = text.replace(/shrug/gi, "¯_(ツ)_/¯ ");
+     text = text.replace(/\/shrug/gi, "¯\\_(ツ)_/¯ ");
 }
  if (text.toLowerCase().includes("/tableflip")) {
-     text = text.replace(/tableflip/gi, " (╯°□°）╯︵ ┻━┻");
+     text = text.replace(/\/tableflip/gi, " (╯°□°）╯︵ ┻━┻");
+}
+ if (text.toLowerCase().includes("blueberries")) {
+     text = text.replace(/blueberries/gi, "redberries");
+}
+ if (text.toLowerCase().includes("blueberry")) {
+     text = text.replace(/blueberry/gi, "redberry");
 }
 
 
