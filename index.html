@@ -321,6 +321,49 @@ async function sendMessage() {
         openAnimals();
     }
 
+    if (text.toLowerCase().includes("/whoshere")) {
+    const snap = await db.ref("users").once("value");
+    let count = 0;
+    const now = Date.now();
+    snap.forEach(u => { if (u.val().lastSeen && (now - u.val().lastSeen < 300000)) count++; });
+    showModal(`<h3>👀 Who's Here?</h3><p style="font-size:28px; font-weight:bold; color:var(--primary);">${count}</p><p style="color:#888; font-size:11px;">players active in the last 5 minutes</p>`);
+    input.value = "";
+    return;
+}
+    
+    if (text.toLowerCase().includes("/stats")) {
+    const userSnap = await db.ref("users/" + currentUser).once("value");
+    const userData = userSnap.val();
+    const createdTime = userData.created ? new Date(userData.created).toLocaleDateString() : "Unknown";
+
+    let msgCount = 0;
+    const msgSnap = await db.ref("messages").once("value");
+    msgSnap.forEach(m => { if (m.val().username === currentUser) msgCount++; });
+
+    const gcSnap = await db.ref("gc_meta").once("value");
+    let gcList = [];
+    gcSnap.forEach(g => {
+        if (g.val().members && g.val().members.includes(currentUser)) gcList.push(g.val().name);
+    });
+
+    const sessionStart = window._sessionStart || (window._sessionStart = Date.now());
+    const sessionMins = Math.floor((Date.now() - sessionStart) / 60000);
+
+    showModal(`
+        <h3>📊 Your Stats</h3>
+        <div style="text-align:left; font-size:12px; background:#0f0f1a; padding:12px; border-radius:8px; border:1px solid var(--primary); line-height:2;">
+            <b> user:</b> ${currentUser}<br>
+            <b> msg:</b> ${msgCount}<br>
+            <b> gccount:</b> ${gcList.length > 0 ? gcList.join(", ") : "None"}<br>
+            <b> session:</b> ${sessionMins} min(s)<br>
+            <b> adm:</b> ${admins.includes(currentUser) ? "Yes" : "No"}<br>
+            <b> status:</b> ${userData.status || "Active"}
+        </div>
+    `);
+    input.value = "";
+    return;
+}
+
     if (text.toLowerCase().includes("/piano")) {
     const piano = document.createElement('img');
     piano.src = "https://www.pianoheritage.com/wp-content/uploads/2017/07/cropped-SiteIcon512PxSquare.png";
@@ -339,6 +382,35 @@ async function sendMessage() {
     setTimeout(() => { piano.remove(); }, 2000);
     }
     // TEXT SECRETS
+
+if (text.toLowerCase().includes("/flipside")) {
+    text = `<span style="display:inline-block; transform:rotate(180deg);">${text.replace(/\/flipside\s*/i,"").trim()}</span>`;
+}
+    
+if (text.toLowerCase().includes("/morse") || text.toLowerCase().includes("/morsecode")) {
+    const morseMap = {
+        'a':'.-','b':'-...','c':'-.-.','d':'-..','e':'.','f':'..-.','g':'--.','h':'....','i':'..','j':'.---',
+        'k':'-.-','l':'.-..','m':'--','n':'-.','o':'---','p':'.--.','q':'--.-','r':'.-.','s':'...','t':'-',
+        'u':'..-','v':'...-','w':'.--','x':'-..-','y':'-.--','z':'--..',
+        '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...',
+        '8':'---..','9':'----.',' ':'/'
+    };
+    const raw = text.replace(/\/morsecode\s*/i,"").replace(/\/morse\s*/i,"").trim();
+    text = raw.toLowerCase().split('').map(c => morseMap[c] || c).join(' ');
+}
+if (text.toLowerCase().includes("/angry")) {
+    text = `<span style="background:#eb4d4b; padding:2px 6px; border-radius:6px;">${text.replace(/\/angry\s*/i,"").trim()}</span>`;
+}
+
+if (text.trim().toLowerCase() === "xyzzy") {
+    alert("Nothing happens...");    
+    
+if (text.toLowerCase().includes("/binary")) {
+    const raw = text.replace(/\/binary\s*/i, "").trim();
+    text = raw.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+}
+    
+}
 if (text.toLowerCase().includes("/1337")) {
     text = leetspeak(text.replace(/\/1337\s*/i, "").trim());
 }
