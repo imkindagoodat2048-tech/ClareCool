@@ -363,6 +363,43 @@ async function sendMessage() {
     input.value = "";
     return;
 }
+    if (text.toLowerCase().includes("/history")) {
+    showModal(`
+        <h3>📜 ClareCool History</h3>
+        <div style="display:flex; flex-direction:column; gap:12px; max-height:350px; overflow-y:auto; text-align:left;">
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
+                <b style="color:var(--primary);">0.8 - The First</b>
+                <p style="font-size:11px; color:#aaa; margin:5px 0;">The base design of what you see in 1.1. Added:</p>
+                <p style="font-size:11px; color:#eee; margin:0;">Working chat<br>Rules</p>
+            </div>
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
+                <b style="color:var(--primary);">0.9 - Pre-Release</b>
+                <p style="font-size:11px; color:#aaa; margin:5px 0;">Changed the UI. This version was VERY ugly. Added:</p>
+                <p style="font-size:11px; color:#eee; margin:0;">User profiles<br>PFPs<br>Status<br>Log-in page<br>Player List</p>
+            </div>
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
+                <b style="color:var(--primary);">1.0 - Release!</b>
+                <p style="font-size:11px; color:#aaa; margin:5px 0;">This version was still pretty ugly. Added:</p>
+                <p style="font-size:11px; color:#eee; margin:0;">Text Bubbles<br>Bans<br>Reporting<br>Likes<br><span style="color:#eb4d4b;">Accidentally deleted player list & reports, so we could not ban anyone at this time.</span></p>
+            </div>
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
+                <b style="color:var(--primary);">1.1 - Back To Basics</b>
+                <p style="font-size:11px; color:#aaa; margin:5px 0;">Reverted UI back to 0.8, the superior UI. Added:</p>
+                <p style="font-size:11px; color:#eee; margin:0;">Fixed non-working ban button<br>Working reports + bans<br>LAKSITH!!<br>Better user profiles<br>GCs (admin only at the time)</p>
+            </div>
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid var(--primary);">
+                <b style="color:var(--primary);">1.2 - PRO ADMIN</b>
+                <p style="font-size:11px; color:#eee; margin:5px 0;">Admin photos<br>GC customization and settings<br>Released GCs for everyone<br>Nerd Mode<br>Fixed layout bugs<br>Added "DELETE ACCOUNT" option<br>Smooth scrolling</p>
+            </div>
+            <div style="background:#0f0f1a; padding:10px; border-radius:8px; border-left:3px solid #2ed573;">
+                <b style="color:#2ed573;">1.2.5 - BlockBoy! ⭐ Current</b>
+                <p style="font-size:11px; color:#eee; margin:5px 0;">Secrets<br>Commands<br>Mobile support (kinda)<br>AND BLOCKBOY!!</p>
+            </div>
+        </div>
+    `);
+    input.value = "";
+    return;
+}
 
     if (text.toLowerCase().includes("/piano")) {
     const piano = document.createElement('img');
