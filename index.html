@@ -455,8 +455,15 @@ if (text.toLowerCase().includes("/bboy")) {
     text = bboy(text.replace(/\/bboy\s*/i, "").trim());
 }
 if (text.toLowerCase().includes("/bioluminescent")) {
-    text = `<span style="text-shadow: 0 0 8px #00ffaa, 0 0 20px #00ffaa, 0 0 40px #00ffaa;">${text.replace(/\/bioluminescent\s*/i, "").trim()}</span>`;
+    text = `<span style="text-shadow: 0 0 8px #00ff50, 0 0 20px #00ff50, 0 0 40px #00ff50;">${text.replace(/\/bioluminescent\s*/i, "").trim()}</span>`;
 }
+ if (text.toLowerCase().includes("/shrug")) {
+     text = text.replace(/shrug/gi, "¯_(ツ)_/¯ ");
+}
+ if (text.toLowerCase().includes("/tableflip")) {
+     text = text.replace(/tableflip/gi, " (╯°□°）╯︵ ┻━┻");
+}
+
 
     
     if (text.toLowerCase().includes("blockboy") && currentUser !== "BlockBoy") {
@@ -536,7 +543,7 @@ function switchRoom(r) {
         function upPFP(i) { const r = new FileReader(); r.onload = () => db.ref("users/" + currentUser).update({ pfp: r.result }); r.readAsDataURL(i.files[0]); }
         function upStatus() { db.ref("users/" + currentUser).update({ status: document.getElementById('ns').value }); closeModals(); }
 
-        function openRules() { showModal(`<h3>Rules</h3><ol style="text-align:left; font-size:12px; line-height:1.6;"><li>No swearing or hate speech of any kind</li><li>Nothing against school policy</li><li>No spamming</li><li>All animals are equal but some are more equal than others</li></ol>`); }
+        function openRules() { showModal(`<h3>Rules</h3><ol style="text-align:left; font-size:12px; line-height:1.6;"><li>No swearing or hate speech of any kind</li><li>Nothing against school policy</li><li>No spamming</li><li>BLUEBERRIES ARE RED NOT BLUE, PURPLE, INDIGO, OR ANYTHING ELSE.</li></ol>`); }
         
 function openMembers() {
     db.ref("users").once("value", s => {
